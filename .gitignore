@@ -1,1 +1,7 @@
+# Ignore VIM files
 *~
+*.swp
+
+# Ignore compiled files
+*.o
+mysh
