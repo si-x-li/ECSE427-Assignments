@@ -24,29 +24,9 @@ int main() {
 
 	while(err == 0) {
 		err = prompt_command(list);
-		switch(err) {
-			case -3: printf("Bye!\n"); break;
-			case -4: printf("Variable does not exist!\n"); break;
-			case -5: printf("Script not found!\n"); break;
-			case -6: printf("Variable could not be set!\n"); break;
-			case -7: break;
-			case -1:
-			case -2:
-			case -8:
-			case -9:
-			case -10:
-			case -11:
-			default: break;
-		}
-		// Exit
-		if (err != -3) {
-			err = 0;
-		} else {
-			exit(err);
-		}
+		err = handle_error(err);
 
-		printf("\n");
-		print_traversal(list);
+		// Clear line
 		printf("\n");
 	}
 }
@@ -74,17 +54,17 @@ int main() {
 int prompt_command(linked_list *list) {
 	int num_of_words;
 	int trimmed_cmd_len;
-	char cmd[MAX_CMD_LENGTH];
+	char *cmd = (char *) malloc(MAX_CMD_LENGTH);
 	char trimmed_cmd[MAX_CMD_LENGTH];
 	char *words[MAX_CMD_LENGTH];
 
 	// Prompt user for input
 	printf("$");
 	fgets(cmd, MAX_CMD_LENGTH, stdin);
-
 	// Obtain the trimmed command, i.e. trailing and leading whitespaces
 	// removed from the input string
-	trimmed_cmd_len = trim(cmd, strnlen(cmd, MAX_CMD_LENGTH), trimmed_cmd);
+	trimmed_cmd_len = trim(cmd, strlen(cmd), trimmed_cmd);
+	free(cmd);
 
 	// Send user input to the parser function and return the status code
 	if (trimmed_cmd_len > 0) {
@@ -156,8 +136,6 @@ int trim(const char *str, int str_size, char *trimmed_str) {
 	strncpy(trimmed_str, str + start, (end - start));
 	trimmed_str[end - start] = '\0';
 
-//	printf("Start: %d end: %d\n", start, end);
-
 	// Return size of substring
 	return strnlen(trimmed_str, MAX_CMD_LENGTH);
 }
@@ -204,6 +182,35 @@ int parser(const char *str, char *words[MAX_CMD_LENGTH]) {
 	return i;
 }
 
+/* ----------------------------------------------------------------------------
+ * @brief Handles error returned by the entire system.
+ * @param input  - err A status/error code
+ * @return int - The modified error code
+ * ----------------------------------------------------------------------------
+ */
+int handle_error(int err) {
+	switch(err) {
+		case -3: printf("Bye!\n"); break;
+		case -4: printf("Variable does not exist!\n"); break;
+		case -5: printf("Script not found!\n"); break;
+		case -6: printf("Variable could not be set!\n"); break;
+		case -7: break;
+		case -1:
+		case -2:
+		case -8:
+		case -9:
+		case -10:
+		case -11:
+		default: break;
+	}
+	// Exit
+	if (err != -3) {
+		err = 0;
+	} else {
+		exit(err);
+	}
+	return err;
+}
 
 /* ----------------------------------------------------------------------------
  *                    SECTION TO BE REMOVED WHEN SUBMITTING

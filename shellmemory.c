@@ -253,6 +253,7 @@ int remove_node_by_key (linked_list *list, char *key) {
  *                 -2 - list is null
  *                 -3 - key is null
  *                 -4 - value is null
+ *                 -6 - Failed to allocate resource
  * ----------------------------------------------------------------------------
  */
 int update_value_by_key (linked_list *list, char *key, char *value) {
@@ -281,9 +282,22 @@ int update_value_by_key (linked_list *list, char *key, char *value) {
 		for (i = 0; i < index; i++) {
 			current_node = current_node->next;
 		}
-		// String copy and do not malloc again
-		strncpy(current_node->value, value, strlen(value));
-		current_node->value[strlen(value)] = '\0';
+
+		// Free up previous value
+		free(current_node->value);
+
+		// Allocate new value resource
+		char *new_value = (char *) malloc(strlen(value) + 1);
+
+		// Failed to allocate resource
+		if (!new_value) {
+			return -6;
+		}
+
+		// Copy over new value
+		strncpy(new_value, value, strlen(value));
+		new_value[strlen(value)] = '\0';
+		current_node->value = new_value;
 		return 0;
 	} else {
 		return -1;

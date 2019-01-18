@@ -4,6 +4,12 @@
 #define MAX_CMD_LENGTH          1024
 #define MAX_KEY_LENGTH          1024
 #define MAX_VALUE_LENGTH        1024
+#define GENERIC_EXPECTED_MSG    "Expected: "
+
+/*
+ * Declare maximum length of line that can be read
+ */
+#define MAX_LINE_LENGTH         1024
 
 /*
  * Declare singly linked list data structure
