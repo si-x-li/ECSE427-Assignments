@@ -1,6 +1,7 @@
 # Ignore VIM files
 *~
 *.swp
+*.swo
 
 # Ignore compiled files
 *.o

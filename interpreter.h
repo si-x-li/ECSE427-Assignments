@@ -1,3 +1,4 @@
-int interpret(char **parsed_words, int num_of_words);
-int print(char **parsed_words, int num_of_words);
-void print_help();
+/*
+ * Available functions from the interpreter
+ */
+int interpret(linked_list *list, char **parsed_words, int num_of_words);

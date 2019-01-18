@@ -5,7 +5,16 @@
 #include "shell.h"
 #include "interpreter.h"
 
+/*
+ * Local functions
+ */
+void automated_test(linked_list *list);
+
 int main() {
+	// Serves as the shell's memory
+ 	linked_list *list = (linked_list *) malloc(sizeof(linked_list));
+	list->size = 0;
+
 	// Keep track of errors
 	int err = 0;
 
@@ -14,24 +23,32 @@ int main() {
 	       SHELL_NAME);
 
 	while(err == 0) {
-		err = prompt_command();
+		err = prompt_command(list);
 		switch(err) {
 			case -3: printf("Bye!\n"); break;
-			case -4: printf("The specified variable could not be printed\n");
-			case -5: printf("The specified script could not be executed\n");
-			case -6: printf("The specified variable could not be set\n");
+			case -4: printf("Variable does not exist!\n"); break;
+			case -5: printf("Script not found!\n"); break;
+			case -6: printf("Variable could not be set!\n"); break;
+			case -7: break;
 			case -1:
 			case -2:
-			case -7:
 			case -8:
 			case -9:
 			case -10:
 			case -11:
-			default: err = 0; break;
+			default: break;
 		}
-	}
+		// Exit
+		if (err != -3) {
+			err = 0;
+		} else {
+			exit(err);
+		}
 
-	exit(err);
+		printf("\n");
+		print_traversal(list);
+		printf("\n");
+	}
 }
 
 /* ----------------------------------------------------------------------------
@@ -47,14 +64,14 @@ int main() {
  *                 -4  - Variable could not be printed
  *                 -5  - Script could not be executed
  *                 -6  - Variable could not be set
- *                 -7  - FUTURE USE - Reserved for interpreter
+ *                 -7  - Undefined command
  *                 -8  - FUTURE USE - Reserved for interpreter
  *                 -9  - FUTURE USE - Reserved for interpreter
  *                 -10 - No input detected from user
  *                 -11 - Invalid number of words from this function 
  * ----------------------------------------------------------------------------
  */
-int prompt_command() {
+int prompt_command(linked_list *list) {
 	int num_of_words;
 	int trimmed_cmd_len;
 	char cmd[MAX_CMD_LENGTH];
@@ -78,7 +95,7 @@ int prompt_command() {
 	}
 
 	if (num_of_words > 0) {
-		return interpret(words, num_of_words);
+		return interpret(list, words, num_of_words);
 	} else if (num_of_words == 0) {
 		return -10;
 	} else {
@@ -185,4 +202,58 @@ int parser(const char *str, char *words[MAX_CMD_LENGTH]) {
 
 	// Returns number of words found
 	return i;
+}
+
+
+/* ----------------------------------------------------------------------------
+ *                    SECTION TO BE REMOVED WHEN SUBMITTING
+ * ----------------------------------------------------------------------------
+ */
+void automated_test(linked_list *list) {
+	char output_value[MAX_CMD_LENGTH];
+	printf("Inserted %d\n", insert_first(list, "hello", "last"));
+	printf("Update %d\n", update_value_by_key(list, "hello", "first"));
+	print_traversal(list);
+	printf("Inserted %d\n", insert_first(list, "abc", "123"));
+	print_traversal(list);
+	printf("Inserted %d\n", insert_first(list, "g", "456"));
+	print_traversal(list);
+	printf("Inserted at index %d\n", insert(list, 3, "d", "55"));
+	print_traversal(list);
+	printf("Inserted at index %d\n", insert(list, 0, "e", "535"));
+	print_traversal(list);
+	printf("Inserted at index %d\n", insert(list, 1, "f", "77"));
+	print_traversal(list);
+	printf("Inserted at index %d\n", insert(list, list->size, "h", NULL));
+	printf("Inserted at index %d\n", insert(list, list->size, NULL, "h"));
+	printf("Inserted at index %d\n", insert(list, 10, "h", "h"));
+	printf("Inserted at index %d\n", insert(NULL, list->size, "h", "h"));
+	print_traversal(list); 
+	printf("List size: %d\n", list->size);
+	printf("Found hello: %d\n", search(list, "hello"));
+	printf("Found last: %d\n", search(list, "last"));
+	printf("Found by key: %d\n", get_value_by_key(list, "hello", output_value));
+	printf("Value by key: %s\n", output_value);
+	printf("Found by key: %d\n", get_value_by_key(list, "134", output_value));
+	if (output_value) {
+		printf("Value by key: %s\n", output_value);
+	}
+	printf("Found by position: %d\n", get_value(list, 1, output_value));
+	printf("Value by position: %s\n", output_value);
+	printf("Found by position last: %d\n", get_value(list, list->size, output_value));
+	printf("Value by position: %s\n", output_value);
+	printf("Found by position first: %d\n", get_value(list, 0, output_value));
+	printf("Value by position: %s\n", output_value);
+	print_traversal(list);
+	printf("Update value by key: %d\n", update_value_by_key(list, "d", "353"));
+	print_traversal(list);
+	printf("Update value by inexistant key: %d\n", 
+	       update_value_by_key(list, "a", "355"));
+	printf("Remove node by key: %d\n", remove_node_by_key(list, "e"));
+	print_traversal(list);
+	printf("Remove node by key: %d\n", remove_node_by_key(list, "d"));
+	print_traversal(list);
+	printf("Remove node by key: %d\n", remove_node_by_key(list, "abc"));
+	print_traversal(list);
+	printf("List size: %d\n", list->size);
 }
