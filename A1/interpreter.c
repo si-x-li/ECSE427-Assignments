@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include "shell.h"
 #include "interpreter.h"
@@ -45,10 +46,22 @@ int interpret(linked_list *list, char **parsed_words, int num_of_words) {
 
 	// Handle user inputs
 	if (strcmp(parsed_words[0], "quit") == 0) {
+		/* ------------------------------------------------------------
+		 * Handles quit command
+		 * ------------------------------------------------------------
+		 */
 		return -3;
 	} else if (strcmp(parsed_words[0], "help") == 0) {
+		/* ------------------------------------------------------------
+		 * Handles print command
+		 * ------------------------------------------------------------
+		 */
 		print_help();
 	} else if (strcmp(parsed_words[0], "print") == 0) {
+		/* ------------------------------------------------------------
+		 * Handles print command
+		 * ------------------------------------------------------------
+		 */
 		if (num_of_words != 2) {
 			printf(GENERIC_EXPECTED_MSG "print <varname>\n");
 			return -7;
@@ -66,6 +79,10 @@ int interpret(linked_list *list, char **parsed_words, int num_of_words) {
 
 		printf("%s\n", output_value);
 	} else if (strcmp(parsed_words[0], "run") == 0) {
+		/* ------------------------------------------------------------
+		 * Handles run command
+		 * ------------------------------------------------------------
+		 */
 		if (num_of_words != 2) {
 			printf(GENERIC_EXPECTED_MSG "run <filename>\n");
 			return -7;
@@ -77,14 +94,25 @@ int interpret(linked_list *list, char **parsed_words, int num_of_words) {
 
 		return err;
 	} else if (strcmp(parsed_words[0], "set") == 0) {
+		/* ------------------------------------------------------------
+		 * Handles set command
+		 * ------------------------------------------------------------
+		 */
 		// Checks if the right number of arguments is obtained
-		if (num_of_words != 3) {
+		if (num_of_words < 3) {
 			printf(GENERIC_EXPECTED_MSG "set <varname> <value>\n"); 
 			return -7;
 		}
 
+		char space[] = " ";
 		char *key = parsed_words[1];
-		char *value = parsed_words[2];
+		char *value = (char *) malloc(MAX_CMD_LENGTH);
+
+		// Used to concatenate multiple string arguments together 
+		for (int i = 2; i < num_of_words; i++) {
+			strcat(value, parsed_words[i]);
+			strcat(value, space);
+		}
 
 		// Attempt to insert the node
 		err = insert(list, 0, key, value);
@@ -92,11 +120,14 @@ int interpret(linked_list *list, char **parsed_words, int num_of_words) {
 		if (err == -1) {
 			// Key was found so update value
 			err = update_value_by_key(list, key, value);
+			free(value);
 		} else if (err == 0) {
 			// Key was not found and node is inserted
+			free(value);
 			return 0;
 		} else {
 			// Node could not be inserted
+			free(value);
 			return -6;
 		}
 
@@ -104,7 +135,11 @@ int interpret(linked_list *list, char **parsed_words, int num_of_words) {
 		if (err != 0) {
 			return -6;
 		}
-	}	else {
+	} else {
+		/* ------------------------------------------------------------
+		 * Handles unknown inputs
+		 * ------------------------------------------------------------
+		 */
 		printf("Undefined command\n");
 		return -7;
 	}

@@ -1,13 +1,15 @@
 help
 set
-kappa
+unknown
 text
-set a 0123456789
+set a 1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
+print a
 set b bob
 set c marley
 set a cool
+print a
 set a
-set a      124 124       
+set a      124 124
 print a
   print a
 print b
