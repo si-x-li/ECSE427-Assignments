@@ -92,6 +92,10 @@ int interpret(linked_list *list, char **parsed_words, int num_of_words) {
 
 		err = read_and_exec_file(list, filename);
 
+		if (err == -2) {
+			printf(GENERIC_ERROR_MSG "File not found\n");
+		}
+
 		return err;
 	} else if (strcmp(parsed_words[0], "set") == 0) {
 		/* ------------------------------------------------------------
@@ -107,12 +111,18 @@ int interpret(linked_list *list, char **parsed_words, int num_of_words) {
 		char space[] = " ";
 		char *key = parsed_words[1];
 		char *value = (char *) malloc(MAX_CMD_LENGTH);
+		int count = 0;
 
 		// Used to concatenate multiple string arguments together 
 		for (int i = 2; i < num_of_words; i++) {
-			strcat(value, parsed_words[i]);
-			strcat(value, space);
+			for (int j = 0; j < strlen(parsed_words[i]); j++) {
+				value[count++] = parsed_words[i][j];
+			}
+			// Insert a space
+			value[count++] = ' ';
 		}
+		// Null-terminate the string
+		value[count] = '\0';
 
 		// Attempt to insert the node
 		err = insert(list, 0, key, value);

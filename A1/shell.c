@@ -61,6 +61,7 @@ int prompt_command(linked_list *list) {
 	// Prompt user for input
 	printf("$");
 	fgets(cmd, MAX_CMD_LENGTH, stdin);
+
 	// Obtain the trimmed command, i.e. trailing and leading whitespaces
 	// removed from the input string
 	trimmed_cmd_len = trim(cmd, strlen(cmd), trimmed_cmd);

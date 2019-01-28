@@ -11,10 +11,11 @@ print a
 set a
 set a      124 124
 print a
-  print a
+print a
 print b
 print c
 print d
 print
-run
+run abc.txt
+run testfile2.txt
 quit

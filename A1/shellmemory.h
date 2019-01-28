@@ -5,6 +5,7 @@
 #define MAX_KEY_LENGTH          1024
 #define MAX_VALUE_LENGTH        1024
 #define GENERIC_EXPECTED_MSG    "Expected: "
+#define GENERIC_ERROR_MSG       "Error: "
 
 /*
  * Declare maximum length of line that can be read
