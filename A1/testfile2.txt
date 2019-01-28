@@ -1,2 +1,0 @@
-set abcdef 25
-print abcdef
