@@ -1,6 +1,6 @@
 help
 set
-unknown
+unknown_command
 text
 set a 1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
 print a
@@ -8,7 +8,6 @@ set b bob
 set c marley
 set a cool
 print a
-set a
 set a      124 124
 print a
 print a
@@ -17,5 +16,4 @@ print c
 print d
 print
 run abc.txt
-run testfile2.txt
 quit

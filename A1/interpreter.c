@@ -98,6 +98,7 @@ int interpret(linked_list *list, char **parsed_words, int num_of_words) {
 
 		return err;
 	} else if (strcmp(parsed_words[0], "set") == 0) {
+		int i, j;
 		/* ------------------------------------------------------------
 		 * Handles set command
 		 * ------------------------------------------------------------
@@ -114,8 +115,8 @@ int interpret(linked_list *list, char **parsed_words, int num_of_words) {
 		int count = 0;
 
 		// Used to concatenate multiple string arguments together 
-		for (int i = 2; i < num_of_words; i++) {
-			for (int j = 0; j < strlen(parsed_words[i]); j++) {
+		for (i = 2; i < num_of_words; i++) {
+			for (j = 0; j < strlen(parsed_words[i]); j++) {
 				value[count++] = parsed_words[i][j];
 			}
 			// Insert a space

@@ -138,7 +138,7 @@ int trim(const char *str, int str_size, char *trimmed_str) {
 	trimmed_str[end - start] = '\0';
 
 	// Return size of substring
-	return strnlen(trimmed_str, MAX_CMD_LENGTH);
+	return strlen(trimmed_str);
 }
 
 /* ----------------------------------------------------------------------------
