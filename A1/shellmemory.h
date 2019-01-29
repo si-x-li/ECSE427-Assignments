@@ -24,29 +24,29 @@
 /*
  * Declare singly linked list data structure
  */
-typedef struct node_t node;
-typedef struct linked_list_t linked_list;
+typedef struct node node_t;
+typedef struct linked_list linked_list_t;
 
-struct node_t {
+struct node {
 	char *key;
 	char *value;
-	node *next;
+	node_t *next;
 };
 
-struct linked_list_t {
-	node *head;
+struct linked_list {
+	node_t *head;
 	unsigned int size;
 };
 
 /*
  * Supported functions for singly linked list
  */
-int insert_first(linked_list *list, char *key, char *value);
-int insert(linked_list *list, unsigned int position, char *key, char *value);
-void print_traversal(linked_list *list);
-void print_node(node *node);
-int remove_node_by_key(linked_list *list, char *key);
-int update_value_by_key(linked_list *list, char *key, char *value);
-int get_value(linked_list *list, unsigned int position, char *output_value);
-int get_value_by_key(linked_list *list, char *key, char *output_value);
-int search(linked_list *list, char *key);
+int insert_first(linked_list_t *list, char *key, char *value);
+int insert(linked_list_t *list, unsigned int position, char *key, char *value);
+void print_traversal(linked_list_t *list);
+void print_node(node_t *node);
+int remove_node_by_key(linked_list_t *list, char *key);
+int update_value_by_key(linked_list_t *list, char *key, char *value);
+int get_value(linked_list_t *list, unsigned int position, char *output_value);
+int get_value_by_key(linked_list_t *list, char *key, char *output_value);
+int search(linked_list_t *list, char *key);

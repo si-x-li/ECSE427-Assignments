@@ -24,7 +24,7 @@
  *                 -6 - Could not allocate new memory space
  * ----------------------------------------------------------------------------
  */
-int insert_first (linked_list *list, char *key, char *value) {
+int insert_first (linked_list_t *list, char *key, char *value) {
 	// Checks if the linked list is null
 	if (!list) {
 		return -2;
@@ -41,7 +41,7 @@ int insert_first (linked_list *list, char *key, char *value) {
 	}
 
 	// Standard insertion technique for singly linked list
-	node *new_node = (node *) malloc(sizeof(node));
+	node_t *new_node = (node_t *) malloc(sizeof(node_t));
 	char *new_key = (char *) malloc(strlen(key) + 1);
 	char *new_value = (char *) malloc(strlen(value) + 1);
 
@@ -82,11 +82,11 @@ int insert_first (linked_list *list, char *key, char *value) {
  *                 -6 - Could not allocate new memory space
  * ----------------------------------------------------------------------------
  */
-int insert (linked_list *list, unsigned int position, char *key, char *value) {
+int insert (linked_list_t *list, unsigned int position, char *key, char *value) {
 	int i;
 	int size;
-	node *current_node;
-	node *next_node;
+	node_t *current_node;
+	node_t *next_node;
 
 	// Checks if list is null
 	if (!list) {
@@ -120,7 +120,7 @@ int insert (linked_list *list, unsigned int position, char *key, char *value) {
 	}
 
 	// Create a new node
-	node *new_node = (node *) malloc(sizeof(node));
+	node_t *new_node = (node_t *) malloc(sizeof(node_t));
 	char *new_key = (char *) malloc(strlen(key) + 1);
 	char *new_value = (char *) malloc(strlen(value) + 1);
 
@@ -160,9 +160,9 @@ int insert (linked_list *list, unsigned int position, char *key, char *value) {
  * @param input  - list     A singly linked list
  * ----------------------------------------------------------------------------
  */
-void print_traversal (linked_list *list) {
+void print_traversal (linked_list_t *list) {
 	int i;
-	node *current_node;
+	node_t *current_node;
 	int size;
 
 	// Checks if list is null
@@ -185,7 +185,7 @@ void print_traversal (linked_list *list) {
  * @param input  - node     A singly linked list node
  * ----------------------------------------------------------------------------
  */
-void print_node (node *node) {
+void print_node (node_t *node) {
 	// Check if node is null
 	if (!node) {
 		return;
@@ -205,11 +205,11 @@ void print_node (node *node) {
  *                 -3 - key is null
  * ----------------------------------------------------------------------------
  */
-int remove_node_by_key (linked_list *list, char *key) {
+int remove_node_by_key (linked_list_t *list, char *key) {
 	int i;
 	int index;
-	node *previous_node;
-	node *current_node;
+	node_t *previous_node;
+	node_t *current_node;
 
 	// Checks if list is null
 	if (!list) {
@@ -264,10 +264,10 @@ int remove_node_by_key (linked_list *list, char *key) {
  *                 -6 - Failed to allocate resource
  * ----------------------------------------------------------------------------
  */
-int update_value_by_key (linked_list *list, char *key, char *value) {
+int update_value_by_key (linked_list_t *list, char *key, char *value) {
 	int i;
 	int index;
-	node *current_node;
+	node_t *current_node;
 	// Checks if list is null
 	if (!list) {
 		return -2;
@@ -325,9 +325,9 @@ int update_value_by_key (linked_list *list, char *key, char *value) {
  *                 -3 - Output is null
  * ----------------------------------------------------------------------------
  */
-int get_value (linked_list *list, unsigned int position, char *output_value) {
+int get_value (linked_list_t *list, unsigned int position, char *output_value) {
 	int i;
-	node *current_node;
+	node_t *current_node;
 	int size;
 
 	// Check if list is null
@@ -372,9 +372,9 @@ int get_value (linked_list *list, unsigned int position, char *output_value) {
  *                 -4 - output_value is null
  * ----------------------------------------------------------------------------
  */
-int get_value_by_key (linked_list *list, char *key, char *output_value) {
+int get_value_by_key (linked_list_t *list, char *key, char *output_value) {
 	int i;
-	node *current_node;
+	node_t *current_node;
 	int size;
 
 	// Checks if the list is null
@@ -422,9 +422,9 @@ int get_value_by_key (linked_list *list, char *key, char *output_value) {
  *                 -3 - key is null
  * ----------------------------------------------------------------------------
  */
-int search (linked_list *list, char *key) {
+int search (linked_list_t *list, char *key) {
 	int i;
-	node *current_node;
+	node_t *current_node;
 	int size;
 
 	// Checks if list is null

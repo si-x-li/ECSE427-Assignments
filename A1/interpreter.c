@@ -19,10 +19,10 @@
  */
 void print_debug(char **parsed_words, int num_of_words);
 void print_help();
-int print_var(linked_list *list, char **parsed_words, int num_of_words);
-int run(linked_list *list, char **parsed_words, int num_of_words);
-int set_var(linked_list *list, char **parsed_words, int num_of_words);
-int read_and_exec_file(linked_list *list, char *file);
+int print_var(linked_list_t *list, char **parsed_words, int num_of_words);
+int run(linked_list_t *list, char **parsed_words, int num_of_words);
+int set_var(linked_list_t *list, char **parsed_words, int num_of_words);
+int read_and_exec_file(linked_list_t *list, char *file);
 
 
 /* ----------------------------------------------------------------------------
@@ -46,7 +46,7 @@ int read_and_exec_file(linked_list *list, char *file);
  *                 -7  - Undefined command
  * ----------------------------------------------------------------------------
  */
-int interpret(linked_list *list, char **parsed_words, int num_of_words) {
+int interpret(linked_list_t *list, char **parsed_words, int num_of_words) {
 	int err;
 	// Catch if input is null
 	if (!parsed_words) {
@@ -148,7 +148,7 @@ void print_help () {
  *                 -7 - Number of arguments is not as expected
  * ----------------------------------------------------------------------------
  */
-int print_var (linked_list *list, char **parsed_words, int num_of_words) {
+int print_var (linked_list_t *list, char **parsed_words, int num_of_words) {
 	int err;
 	if (num_of_words != 2) {
 		printf(GENERIC_EXPECTED_MSG "print <varname>\n");
@@ -181,7 +181,7 @@ int print_var (linked_list *list, char **parsed_words, int num_of_words) {
  *                 -7 - Number of arguments is not as expected          
  * ----------------------------------------------------------------------------
  */
-int run (linked_list *list, char **parsed_words, int num_of_words) {
+int run (linked_list_t *list, char **parsed_words, int num_of_words) {
 	int err;
 	if (num_of_words != 2) {
 		printf(GENERIC_EXPECTED_MSG "run <filename>\n");
@@ -210,7 +210,7 @@ int run (linked_list *list, char **parsed_words, int num_of_words) {
  *                 -7 - Number of arguments is not as expected
  * ----------------------------------------------------------------------------
  */
-int set_var (linked_list *list, char **parsed_words, int num_of_words) {
+int set_var (linked_list_t *list, char **parsed_words, int num_of_words) {
 	int i, j, err;
 	// Checks if the right number of arguments is obtained
 	if (num_of_words < 3) {
@@ -264,7 +264,7 @@ int set_var (linked_list *list, char **parsed_words, int num_of_words) {
  *                 -3 - Failed to read file
  * ----------------------------------------------------------------------------
  */
-int read_and_exec_file (linked_list *list, char *filename) {
+int read_and_exec_file (linked_list_t *list, char *filename) {
 	char line[MAX_LINE_LENGTH];
 	char *words[MAX_CMD_LENGTH];
 	char trimmed_cmd[MAX_CMD_LENGTH];
