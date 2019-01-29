@@ -1,9 +1,19 @@
+/* ----------------------------------------------------------------------------
+ * @file SHELL.H
+ * @author Si Xun Li - 260674916
+ * @version 1.0
+ * @brief This file is the header for the shell.
+ * ----------------------------------------------------------------------------
+ */
+
 #include "shellmemory.h"
 
 /*
- * Define constants available
+ * Define system-wide constants
  */
 #define SHELL_NAME "Si Xun Li"
+#define SHELL_VERSION "1.0"
+#define TAB "    "
 
 /*
  * Available functions from shell

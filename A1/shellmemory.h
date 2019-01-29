@@ -1,5 +1,14 @@
+/* ----------------------------------------------------------------------------
+ * @file SHELLMEMORY.H
+ * @author Si Xun Li - 260674916
+ * @version 1.0
+ * @brief This file is the header for shell memory. It also declares the
+ *        linked list data structure.
+ * ----------------------------------------------------------------------------
+ */
+
 /*
- * Declare shell specific constants
+ * Declare more system-wide constants
  */
 #define MAX_CMD_LENGTH          1024
 #define MAX_KEY_LENGTH          1024
