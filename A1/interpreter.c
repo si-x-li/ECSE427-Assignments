@@ -239,7 +239,6 @@ int set_var (linked_list *list, char **parsed_words, int num_of_words) {
 	if (err == -1) {
 		// Key was found so update value
 		err = update_value_by_key(list, key, value);
-		free(value);
 	}
 
 	// Free up value since it is no longer needed
