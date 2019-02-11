@@ -1,7 +1,7 @@
 /* ----------------------------------------------------------------------------
  * @file INTERPRETER.C
  * @author Si Xun Li - 260674916
- * @version 1.0
+ * @version 2.0
  * @brief This file contains the interpreter and all helper functions. The 
  *        majority of functions return status codes. Any negative numbers
  *        indicate an error.
@@ -12,7 +12,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include "shell.h"
+#include "kernel.h"
 #include "interpreter.h"
+#include "constant.h"
 
 /*
  * Local functions
@@ -24,7 +26,6 @@ int run(char **parsed_words, int num_of_words);
 int set_var(char **parsed_words, int num_of_words);
 int read_and_exec_file(char *file);
 int exec(char **parsed_words, int num_of_words);
-
 
 /* ----------------------------------------------------------------------------
  * @brief Interprets an array of strings and calls the appropriate function
@@ -135,11 +136,12 @@ void print_debug (char **parsed_words, int num_of_words) {
 void print_help () {
 	printf("%s shell - Version %s\n"
 	       "Currently supported commands:\n"
-	       TAB "help                   - Displays available commands\n"
-	       TAB "quit                   - Exits this shell\n"
-	       TAB "set <varname> <value>  - Sets a variable to a value\n"
-	       TAB "print <varname>        - Prints the value of a set variable\n"
-	       TAB "run <script_name>      - Execute a script\n",
+	       TAB "help                     - Displays available commands\n"
+	       TAB "quit                     - Exits this shell\n"
+	       TAB "set <varname> <value>    - Sets a variable to a value\n"
+	       TAB "print <varname>          - Prints the value of a set variable\n"
+	       TAB "run <script_name>        - Execute a script\n"
+	       TAB "exec <s1> [<s2>] [<s3>]  - Execute scripts in parallel\n",
 	       SHELL_NAME,
 	       SHELL_VERSION);
 }
@@ -269,35 +271,18 @@ int set_var (char **parsed_words, int num_of_words) {
  */
 int read_and_exec_file (char *filename) {
 	char line[MAX_LINE_LENGTH];
-	char *words[MAX_CMD_LENGTH];
-	char trimmed_cmd[MAX_CMD_LENGTH];
-	int trimmed_cmd_len;
-	int num_of_words;
-	FILE *file = fopen(filename, "r");
 
 	// Checks if filename is null
 	if (!filename) {
 		return -1;
 	}
 
+	FILE *file = fopen(filename, "r");
+
 	// If the file exists, read each line
 	if (file) {
 		while (fgets(line, MAX_LINE_LENGTH, file)) {
-			printf("$%s", line);
-			trimmed_cmd_len = trim(line, strlen(line), trimmed_cmd);
-
-			// Parse through the user input
-			if (trimmed_cmd_len > 0) {
-				num_of_words = parser(trimmed_cmd, words);
-			} else {
-				num_of_words = 0;
-			}
-
-			int err = interpret(words, num_of_words);
-			handle_error(err);
-
-			// Clear line
-			printf("\n");
+			execute_line_from_script(line);
 		}
 		fclose(file);
 		return 0;
@@ -306,13 +291,68 @@ int read_and_exec_file (char *filename) {
 }
 
 /* ----------------------------------------------------------------------------
- * @brief 
+ * @brief Executes a line from a script.
+ * @param input  - cmd    - A string of command
+ * ----------------------------------------------------------------------------
+ */
+void execute_line_from_script(char *line) {
+	int err;
+	char *words[MAX_CMD_LENGTH];
+	char trimmed_cmd[MAX_CMD_LENGTH];
+	int trimmed_cmd_len;
+	int num_of_words;
+
+	printf("$%s", line);
+	trimmed_cmd_len = trim(line, strlen(line), trimmed_cmd);
+
+	// Parse through the user input
+	if (trimmed_cmd_len > 0) {
+		num_of_words = parser(trimmed_cmd, words);
+	} else {
+		num_of_words = 0;
+	}
+
+	err = interpret(words, num_of_words);
+	handle_error(err);
+
+	// Clear line
+	printf("\n");
+}
+
+/* ----------------------------------------------------------------------------
+ * @brief Executes scripts concurrently.
  * @param input  - parsed_words  - An array of strings
  *        input  - num_of_words  - Number of elements in the array
  * @return int - Status code
- *
+ *                  0 - No errors
+ *                 -7 - Number of arguments is not as expected
+ *                 -8 - Could no execute script due to lack of memory
  * ----------------------------------------------------------------------------
  */
 int exec(char **parsed_words, int num_of_words) {
+	int i;
+	FILE *file[3];
+	if (num_of_words > 4 || num_of_words < 2) {
+		printf(GENERIC_EXPECTED_MSG "exec <script1> [<script2>] [<script3>]\n"); 
+		return -7;
+	}
 
+	// Load into memory
+	for (i = 1; i < num_of_words; i++) {
+		file[i - 1] = fopen(parsed_words[i], "r");
+
+		// Cannot find file
+		if (!file[i - 1]) {
+			printf("%s cannot be found\n", parsed_words[i]);
+			continue;
+		}
+
+		if (myinit(file[i - 1]) != 0) {
+			return -8;
+		}
+	}
+
+	scheduler();
+
+	return 0;
 }

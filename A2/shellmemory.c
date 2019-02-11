@@ -1,7 +1,7 @@
 /* ----------------------------------------------------------------------------
  * @file SHELLMEMORY.C
  * @author Si Xun Li - 260674916
- * @version 1.0
+ * @version 2.0
  * @brief This file contains all functions related to the shell memory.
  * ----------------------------------------------------------------------------
  */

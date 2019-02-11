@@ -1,7 +1,7 @@
 /* ----------------------------------------------------------------------------
  * @file SHELL.C
  * @author Si Xun Li - 260674916
- * @version 1.0
+ * @version 2.0
  * @brief This file serves as entry point to the shell and handles status
  *        codes thrown back from the interpreter. It also handles user inputs
  *        and basic parsing.
@@ -13,18 +13,24 @@
 #include <string.h>
 #include <ctype.h>
 #include "shell.h"
+#include "kernel.h"
+#include "cpu.h"
 #include "interpreter.h"
 
 int main() {
-	// Serves as the shell's memory
- 	init_linked_list();
-
 	// Keep track of errors
 	int err = 0;
 
 	// Print welcome prompt
-	printf("Welcome to the %s shell!\nVersion %s Created January 2019\n",
-	       SHELL_NAME, SHELL_VERSION);
+	printf("Kernel %s loaded!\n"
+	       "Welcome to the %s shell!\n"
+	       "Version %s Updated %s\n",
+	       KERNEL_VERSION, SHELL_NAME, SHELL_VERSION, UPDATE_DATE);
+
+	// Initialize various data structures
+	init_ready_queue();
+	init_linked_list();
+	init_cpu();
 
 	while(err == 0) {
 		err = prompt_command();
@@ -59,18 +65,21 @@ int main() {
 int prompt_command() {
 	int num_of_words;
 	int trimmed_cmd_len;
-	char *cmd = (char *) malloc(MAX_CMD_LENGTH);
+	char cmd[MAX_CMD_LENGTH];
 	char trimmed_cmd[MAX_CMD_LENGTH];
 	char *words[MAX_CMD_LENGTH];
 
 	// Prompt user for input
 	printf("$");
-	fgets(cmd, MAX_CMD_LENGTH, stdin);
+	if (fgets(cmd, MAX_CMD_LENGTH, stdin) == NULL) {
+		printf("Piping completed restoring console inputs...\n");
+		stdin = fopen("/dev/tty", "rb");
+		return 0;
+	}
 
 	// Obtain the trimmed command, i.e. trailing and leading whitespaces
 	// removed from the input string
 	trimmed_cmd_len = trim(cmd, strlen(cmd), trimmed_cmd);
-	free(cmd);
 
 	// Send user input to the parser function and return the status code
 	if (trimmed_cmd_len > 0) {
@@ -201,6 +210,7 @@ int handle_error(int err) {
 		case -5: printf("Script not found!\n"); break;
 		case -6: printf("Variable could not be set!\n"); break;
 		case -7: break;
+		case -8: printf("Failed to execute concurrent scripts\n"); break;
 		case -1:
 		case -2:
 		case -20:
