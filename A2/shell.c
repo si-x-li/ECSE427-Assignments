@@ -15,6 +15,7 @@
 #include "shell.h"
 #include "kernel.h"
 #include "cpu.h"
+#include "ram.h"
 #include "interpreter.h"
 
 int main() {
@@ -30,6 +31,7 @@ int main() {
 	// Initialize various data structures
 	init_ready_queue();
 	init_linked_list();
+	init_ram();
 	init_cpu();
 
 	while(err == 0) {

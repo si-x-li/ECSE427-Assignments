@@ -19,4 +19,5 @@ struct pcb {
 /*
  * PCB interfaces
  */
-pcb_t *makePCB(FILE *file);
+pcb_t *make_pcb(FILE *file);
+void free_pcb(pcb_t *pcb);

@@ -19,7 +19,7 @@
  * @return pcb_t - A PCB pointer
  * ----------------------------------------------------------------------------
  */
-pcb_t *makePCB(FILE *file) {
+pcb_t *make_pcb(FILE *file) {
 	pcb_t *pcb;
 	// Check if file pointer is null
 	if (!file) {
@@ -41,7 +41,6 @@ pcb_t *makePCB(FILE *file) {
  * @param input  - pcb  A PCB to be freed.
  * ----------------------------------------------------------------------------
  */
-void freePCB(pcb_t *pcb) {
-	fclose(pcb->pc);
+void free_pcb(pcb_t *pcb) {
 	free(pcb);
 }

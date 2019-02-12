@@ -8,4 +8,7 @@
 
 #define RAM_SIZE 10
 
-int addToRAM(FILE *file);
+void init_ram();
+int add_to_ram(FILE *file);
+int remove_from_ram(FILE *file);
+void print_ram();

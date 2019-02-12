@@ -7,12 +7,25 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include "ram.h"
 
 /*
- * Memory
+ * RAM structure
  */
-FILE *ram[RAM_SIZE];
+typedef struct ram ram_t;
+struct ram {
+	FILE *files[RAM_SIZE];
+};
+ram_t *memory;
+
+/* ----------------------------------------------------------------------------
+ * @brief Initializes the RAM.
+ * ----------------------------------------------------------------------------
+ */
+void init_ram() {
+	memory = (ram_t *) malloc(sizeof(ram_t));
+}
 
 /* ----------------------------------------------------------------------------
  * @brief Inserts the file pointer to the next available spot.
@@ -22,11 +35,11 @@ FILE *ram[RAM_SIZE];
  *                 -1 - Failed to find free spot in memory
  * ----------------------------------------------------------------------------
  */
-int addToRAM(FILE *file) {
+int add_to_ram(FILE *file) {
 	int i;
-	for (i < 0; i < RAM_SIZE; i++) {
-		if(!ram[i]) {
-			ram[i] = file;
+	for (i = 0; i < RAM_SIZE; i++) {
+		if(!memory->files[i]) {
+			memory->files[i] = file;
 			return 0;
 		}
 	}
@@ -36,20 +49,32 @@ int addToRAM(FILE *file) {
 
 /* ----------------------------------------------------------------------------
  * @brief Removes a file pointer.
- * @param input  - i    An index in RAM to set to NULL
+ * @param input  - file    A file pointer
  * @return int - Status code
  *                  0 - No errors
  *                 -1 - Failed to find process in memory
  * ----------------------------------------------------------------------------
  */
-int removeFromRAM(FILE *file) {
+int remove_from_ram(FILE *file) {
 	int i;
-	for (i < 0; i < RAM_SIZE; i++) {
-		if (ram[i] == file) {
-			fclose(ram[i]);
-			ram[i] = NULL;
+	for (i = 0; i < RAM_SIZE; i++) {
+		// Check if not null first, then compare
+		if (memory->files[i] && memory->files[i] == file) {
+			fclose(memory->files[i]);
+			memory->files[i] = NULL;
 			return 0;
 		}
 	}
 	return -1;
+}
+
+/* ----------------------------------------------------------------------------
+ * @brief Prints the content of the RAM.
+ * ----------------------------------------------------------------------------
+ */
+void print_ram() {
+	int i;
+	for (i = 0; i < RAM_SIZE; i++) {
+		printf("%d %p\n", i, memory->files[i]);
+	}
 }

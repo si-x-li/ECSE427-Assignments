@@ -62,8 +62,7 @@ int execute() {
 	while(cpu->quanta > 0) {
 		cpu->quanta--;
 		if (fgets(cpu->IR, MAX_CMD_LENGTH, cpu->IP)) {
-			printf("$%s", cpu->IR);
-			fflush(stdout);
+			execute_line_from_script(cpu->IR);
 		} else {
 			return -1;
 		}
