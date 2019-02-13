@@ -6,8 +6,9 @@
  * ----------------------------------------------------------------------------
  */
 
-#define RAM_SIZE 10
-
+/*
+ * Functions for RAM
+ */
 void init_ram();
 int add_to_ram(FILE *file);
 int remove_from_ram(FILE *file);

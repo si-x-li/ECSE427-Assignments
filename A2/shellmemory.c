@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "constant.h"
 #include "shellmemory.h"
 
 /*
@@ -47,14 +48,8 @@ void print_node(node_t *node);
  *                 -1 - List is already initialized
  * ----------------------------------------------------------------------------
  */
-int init_linked_list () {
-	if (!list) {
-		list = (linked_list_t *) malloc(sizeof(linked_list_t));
-		list->size = 0;
-		return 0;
-	} else {
-		return -1;
-	}
+void init_linked_list () {
+	list = (linked_list_t *) malloc(sizeof(linked_list_t));
 }
 
 /* ----------------------------------------------------------------------------
@@ -87,8 +82,8 @@ int insert_first (char *key, char *value) {
 
 	// Standard insertion technique for singly linked list
 	node_t *new_node = (node_t *) malloc(sizeof(node_t));
-	char *new_key = (char *) malloc(strlen(key) + 1);
-	char *new_value = (char *) malloc(strlen(value) + 1);
+	char *new_key = (char *) malloc(MAX_CMD_LENGTH);
+	char *new_value = (char *) malloc(MAX_CMD_LENGTH);
 
 	// Check if memory is allocated
 	if (new_node && new_key && new_value) {	
@@ -165,8 +160,8 @@ int insert (unsigned int position, char *key, char *value) {
 
 	// Create a new node
 	node_t *new_node = (node_t *) malloc(sizeof(node_t));
-	char *new_key = (char *) malloc(strlen(key) + 1);
-	char *new_value = (char *) malloc(strlen(value) + 1);
+	char *new_key = (char *) malloc(MAX_CMD_LENGTH);
+	char *new_value = (char *) malloc(MAX_CMD_LENGTH);
 
 	// Check if malloc has completed properly
 	if (new_node && new_key && new_value) {
@@ -336,7 +331,7 @@ int update_value_by_key (char *key, char *value) {
 		free(current_node->value);
 
 		// Allocate new value resource
-		char *new_value = (char *) malloc(strlen(value) + 1);
+		char *new_value = (char *) malloc(MAX_CMD_LENGTH);
 
 		// Failed to allocate resource
 		if (!new_value) {

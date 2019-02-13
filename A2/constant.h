@@ -20,3 +20,12 @@
  */
 #define MAX_LINE_LENGTH         1024
 
+/*
+ * Declare maximum number of concurrent files that can be opened per exec
+ */
+#define MAX_FILE_NUMBER         3
+
+/*
+ * Declare the size of RAM
+ */
+#define RAM_SIZE                10

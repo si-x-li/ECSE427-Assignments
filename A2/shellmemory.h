@@ -10,7 +10,7 @@
 /*
  * Supported functions for singly linked list
  */
-int init_linked_list();
+void init_linked_list();
 int insert_first(char *key, char *value);
 int insert(unsigned int position, char *key, char *value);
 void print_traversal();

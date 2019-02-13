@@ -19,7 +19,7 @@
 typedef struct cpu cpu_t;
 struct cpu {
 	FILE *IP;
-	char IR[1024];
+	char IR[MAX_CMD_LENGTH];
 	int quanta;
 };
 
@@ -30,8 +30,7 @@ cpu_t *cpu;
  * ----------------------------------------------------------------------------
  */
 void init_cpu() {
-	cpu = (cpu_t *) malloc(sizeof(cpu_t *));
-	cpu->quanta = QUANTA;
+	cpu = (cpu_t *) malloc(sizeof(cpu_t));
 }
 
 /* ----------------------------------------------------------------------------

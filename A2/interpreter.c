@@ -14,18 +14,19 @@
 #include "shell.h"
 #include "kernel.h"
 #include "interpreter.h"
-#include "constant.h"
 
 /*
  * Local functions
  */
-void print_debug(char **parsed_words, int num_of_words);
+void print_debug(char *parsed_words[MAX_CMD_LENGTH], int num_of_words);
 void print_help();
-int print_var(char **parsed_words, int num_of_words);
-int run(char **parsed_words, int num_of_words);
-int set_var(char **parsed_words, int num_of_words);
+int print_var(char *parsed_words[MAX_CMD_LENGTH], int num_of_words);
+int run(char *parsed_words[MAX_CMD_LENGTH], int num_of_words);
+int set_var(char *parsed_words[MAX_CMD_LENGTH], int num_of_words);
 int read_and_exec_file(char *file);
-int exec(char **parsed_words, int num_of_words);
+int exec(char *parsed_words[MAX_CMD_LENGTH], int num_of_words);
+
+FILE *files[MAX_FILE_NUMBER];
 
 /* ----------------------------------------------------------------------------
  * @brief Interprets an array of strings and calls the appropriate function
@@ -48,16 +49,21 @@ int exec(char **parsed_words, int num_of_words);
  *                 -7  - Undefined command
  * ----------------------------------------------------------------------------
  */
-int interpret(char **parsed_words, int num_of_words) {
+int interpret(char *parsed_words[MAX_CMD_LENGTH], int num_of_words) {
+	for (int i = 0; i < num_of_words; i++) {
+		printf("%s \n", parsed_words[i]);
+	}
 	int err;
 	// Catch if input is null
 	if (!parsed_words) {
-		return -1;
+		err = -1;
+		return err;
 	}
 
 	// Check if there are words
 	if (num_of_words < 1) {
-		return -2;
+		err = -2;
+		return err;
 	}
 
 	// Handle user inputs
@@ -66,48 +72,56 @@ int interpret(char **parsed_words, int num_of_words) {
 		 * Handles quit command
 		 * ------------------------------------------------------------
 		 */
-		return -3;
+		err = -3;
+		return err;
 	} else if (strcmp(parsed_words[0], "help") == 0) {
 		/* ------------------------------------------------------------
 		 * Handles help command
 		 * ------------------------------------------------------------
 		 */
 		print_help();
+		err = 0;
 		return 0;
 	} else if (strcmp(parsed_words[0], "print") == 0) {
 		/* ------------------------------------------------------------
 		 * Handles print command
 		 * ------------------------------------------------------------
 		 */
-		return print_var(parsed_words, num_of_words);
+		err = print_var(parsed_words, num_of_words);
+		return err;
 	} else if (strcmp(parsed_words[0], "run") == 0) {
 		/* ------------------------------------------------------------
 		 * Handles run command
 		 * ------------------------------------------------------------
 		 */
-		return run(parsed_words, num_of_words);
+		err = run(parsed_words, num_of_words);
+		return err;
 	} else if (strcmp(parsed_words[0], "set") == 0) {
 		/* ------------------------------------------------------------
 		 * Handles set command
 		 * ------------------------------------------------------------
 		 */
-		return set_var(parsed_words, num_of_words);
+		err = set_var(parsed_words, num_of_words);
+		return err;
 	} else if (strcmp(parsed_words[0], "exec") == 0) {
 		/* ------------------------------------------------------------
 		 * Handles exec command
 		 * ------------------------------------------------------------
 		 */
-		return exec(parsed_words, num_of_words);
+		for (int i = 0; i < num_of_words; i++) {
+			printf("%d %s\n", i, parsed_words[i]);
+		}
+		err = exec(parsed_words, num_of_words);
+		return err;
 	} else {
 		/* ------------------------------------------------------------
 		 * Handles unknown inputs
 		 * ------------------------------------------------------------
 		 */
 		printf("Undefined command\n");
-		return -7;
+		err = -7;
+		return err;
 	}
-
-	return 0;
 }
 
 /* ----------------------------------------------------------------------------
@@ -117,7 +131,7 @@ int interpret(char **parsed_words, int num_of_words) {
  *        input  - num_of_words  Number of strings
  * ----------------------------------------------------------------------------
  */
-void print_debug (char **parsed_words, int num_of_words) {
+void print_debug (char *parsed_words[MAX_CMD_LENGTH], int num_of_words) {
 	// Checks if parsed_words is null
 	if (!parsed_words) {
 		return;
@@ -156,7 +170,7 @@ void print_help () {
  *                 -7 - Number of arguments is not as expected
  * ----------------------------------------------------------------------------
  */
-int print_var (char **parsed_words, int num_of_words) {
+int print_var (char *parsed_words[MAX_CMD_LENGTH], int num_of_words) {
 	int err;
 	if (num_of_words != 2) {
 		printf(GENERIC_EXPECTED_MSG "print <varname>\n");
@@ -188,7 +202,7 @@ int print_var (char **parsed_words, int num_of_words) {
  *                 -7 - Number of arguments is not as expected          
  * ----------------------------------------------------------------------------
  */
-int run (char **parsed_words, int num_of_words) {
+int run (char *parsed_words[MAX_CMD_LENGTH], int num_of_words) {
 	int err;
 	if (num_of_words != 2) {
 		printf(GENERIC_EXPECTED_MSG "run <filename>\n");
@@ -216,18 +230,16 @@ int run (char **parsed_words, int num_of_words) {
  *                 -7 - Number of arguments is not as expected
  * ----------------------------------------------------------------------------
  */
-int set_var (char **parsed_words, int num_of_words) {
+int set_var (char *parsed_words[MAX_CMD_LENGTH], int num_of_words) {
 	int i, j, err;
+	char *key = parsed_words[1];
+	char value[MAX_CMD_LENGTH];
+	int count = 0;
 	// Checks if the right number of arguments is obtained
 	if (num_of_words < 3) {
 		printf(GENERIC_EXPECTED_MSG "set <varname> <value>\n"); 
 		return -7;
 	}
-
-	char space[] = " ";
-	char *key = parsed_words[1];
-	char *value = (char *) malloc(MAX_CMD_LENGTH);
-	int count = 0;
 
 	// Used to concatenate multiple string arguments together 
 	for (i = 2; i < num_of_words; i++) {
@@ -246,9 +258,6 @@ int set_var (char **parsed_words, int num_of_words) {
 		// Key was found so update value
 		err = update_value_by_key(key, value);
 	}
-
-	// Free up value since it is no longer needed
-	free(value);
 
 	// Variable was not set properly
 	if (err != 0) {
@@ -329,9 +338,10 @@ void execute_line_from_script(char *line) {
  *                 -8 - Could no execute script due to lack of memory
  * ----------------------------------------------------------------------------
  */
-int exec(char **parsed_words, int num_of_words) {
-	int i;
-	FILE *file[3];
+int exec(char *parsed_words[MAX_CMD_LENGTH], int num_of_words) {
+	FILE *files[3];
+	char word[3][MAX_CMD_LENGTH];
+	int i = 0;
 	if (num_of_words > 4 || num_of_words < 2) {
 		printf(GENERIC_EXPECTED_MSG "exec <script1> [<script2>] [<script3>]\n"); 
 		return -7;
@@ -339,17 +349,20 @@ int exec(char **parsed_words, int num_of_words) {
 
 	// Load into memory
 	for (i = 1; i < num_of_words; i++) {
-		file[i - 1] = fopen(parsed_words[i], "r");
+		strncpy(word[i - 1], parsed_words[i], MAX_CMD_LENGTH);
+		files[i - 1] = fopen(word[i - 1], "r");
 
 		// Cannot find file
-		if (!file[i - 1]) {
-			printf("%s cannot be found\n", parsed_words[i]);
+		if (!files[i - 1]) {
+			printf("%s cannot be found\n", word[i - 1]);
 			continue;
+		} else {
+			myinit(files[i - 1]);
 		}
+	}
 
-		if (myinit(file[i - 1]) != 0) {
-			return -8;
-		}
+	for (i = 0; i < MAX_FILE_NUMBER; i++) {
+		printf("%p\n", files[i]);
 	}
 
 	scheduler();

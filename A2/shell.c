@@ -19,6 +19,11 @@
 #include "interpreter.h"
 
 int main() {
+	init_cpu();
+	init_ram();
+	init_ready_queue();
+	init_linked_list();
+
 	// Keep track of errors
 	int err = 0;
 
@@ -27,12 +32,6 @@ int main() {
 	       "Welcome to the %s shell!\n"
 	       "Version %s Updated %s\n",
 	       KERNEL_VERSION, SHELL_NAME, SHELL_VERSION, UPDATE_DATE);
-
-	// Initialize various data structures
-	init_ready_queue();
-	init_linked_list();
-	init_ram();
-	init_cpu();
 
 	while(err == 0) {
 		err = prompt_command();
