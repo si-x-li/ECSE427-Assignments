@@ -11,5 +11,5 @@
 /*
  * Available functions from the interpreter
  */
-int interpret(char *parsed_words[MAX_CMD_LENGTH], int num_of_words);
-void execute_line_from_script(char *line);
+int interpret(char *parsed_words[MAX_CMD_LENGTH], int num_of_words, int is_cpu);
+void run_line_from_script(char *line, int is_cpu);

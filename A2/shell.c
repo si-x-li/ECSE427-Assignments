@@ -91,7 +91,7 @@ int prompt_command() {
 	}
 
 	if (num_of_words > 0) {
-		return interpret(words, num_of_words);
+		return interpret(words, num_of_words, 0);
 	} else if (num_of_words == 0) {
 		return -20;
 	} else {

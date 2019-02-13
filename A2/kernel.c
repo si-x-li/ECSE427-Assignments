@@ -28,6 +28,7 @@ ready_queue_t *queue;
  */
 void add_to_ready(pcb_t *pcb);
 pcb_t *remove_from_ready();
+void print_ready_queue();
 
 /* ----------------------------------------------------------------------------
  * @brief Initializes the ready queue.
@@ -53,13 +54,16 @@ int myinit(FILE *file) {
 	if (add_to_ram(file) == 0) {
 		pcb = make_pcb(file);
 		if (!pcb) {
-			// If PCB didn't create successfully or if the RAM is full, free memory 
-		  // for pcb and remove file from RAM
+			// If PCB was not created successfully, free RAM and close file
+			remove_from_ram(file);
+			fclose(file);
 			return -1;
 		}
 		// If PCB was successfully created, add to ready queue
 		add_to_ready(pcb);
 	} else {
+		// If the file was not added to RAM, close file
+		fclose(file);
 		return -1;
 	}
 	return 0;
@@ -73,29 +77,26 @@ void scheduler() {
 	pcb_t *pcb;
 	// Check if there are any tasks scheduled
 	if (!queue->first) {
-		printf("No tasks scheduled\n");
+		printf("No tasks scheduled on the ready queue\n");
 		return;
 	}
 
 	// Indicate start of execution
-	printf("Executing\n");
+	printf("Start execution...\n");
 	pcb = remove_from_ready();
 	context_switch(pcb);
 	while(pcb) {
 		// Execute
-		if (execute() == 0) {
-			// Process still has lines
+		if (run() == 0) {
+			// Process still has lines add to ready queue
 			add_to_ready(pcb);
 		} else {
 			// Free up RAM and PCB
-			printf("TASK has finished\n");
-			print_ram();
 			remove_from_ram(pcb->pc);
 			free_pcb(pcb);
-			print_ram();
 		}
 
-		// Obtain the next 
+		// Obtain the next PCB from the ready_queue
 		pcb = remove_from_ready();
 		context_switch(pcb);
 	}
@@ -106,18 +107,19 @@ void scheduler() {
  * ----------------------------------------------------------------------------
  */
 pcb_t *remove_from_ready() {
+	pcb_t *temp;
 	if (!queue->first) {
 		// Queue is empty
 		return NULL;
 	} else if (queue->first == queue->last) {
 		// Ready queue has 1 PCB
-		pcb_t *temp = queue->first;
+		temp = queue->first;
 		queue->first = NULL;
 		queue->last = NULL;
 		return temp;
 	} else {
 		// Ready queue has 2 or more PCBs
-		pcb_t *temp = queue->first;
+		temp = queue->first;
 		queue->first = temp->next;
 		temp->next = NULL;
 		return temp;
@@ -141,3 +143,20 @@ void add_to_ready(pcb_t *pcb) {
 	}
 }
 
+/* ----------------------------------------------------------------------------
+ * @brief Prints out the ready queue.
+ * ----------------------------------------------------------------------------
+ */
+void print_ready_queue() {
+	pcb_t *pcb;
+	if (!queue->first) {
+		return;
+	}
+	pcb = queue->first;
+	printf("\n\nREADY QUEUE\n");
+	while(pcb) {
+		printf("%p\n", pcb->pc);
+		pcb = pcb->next;
+	}
+	printf("READY QUEUE\n\n");
+}

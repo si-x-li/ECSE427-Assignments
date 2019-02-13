@@ -1,0 +1,1 @@
+exec test/help_a.txt test/help_b.txt test/help_c.txt

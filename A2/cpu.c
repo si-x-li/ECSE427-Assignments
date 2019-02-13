@@ -54,14 +54,14 @@ int context_switch(pcb_t *pcb) {
  * @brief Executes the file pointed loaded in the CPU.
  * @return int - Status code
  *                  0 - Ran out of quanta
- *                 -1 - Finished executing
+ *                 -1 - EOF
  * ----------------------------------------------------------------------------
  */
-int execute() {
+int run() {
 	while(cpu->quanta > 0) {
 		cpu->quanta--;
 		if (fgets(cpu->IR, MAX_CMD_LENGTH, cpu->IP)) {
-			execute_line_from_script(cpu->IR);
+			run_line_from_script(cpu->IR, 1);
 		} else {
 			return -1;
 		}

@@ -41,10 +41,12 @@ int add_to_ram(FILE *file) {
 	for (i = 0; i < RAM_SIZE; i++) {
 		if(!memory->files[i]) {
 			memory->files[i] = file;
+			printf("Loaded file to memory\n");
 			return 0;
 		}
 	}
 
+	printf("No memory available to load file\n");
 	return -1;
 }
 
@@ -67,6 +69,20 @@ int remove_from_ram(FILE *file) {
 		}
 	}
 	return -1;
+}
+
+/* ----------------------------------------------------------------------------
+ * @brief Clear RAM due to recursive exec calls.
+ * ----------------------------------------------------------------------------
+ */
+void clear_ram() {
+	int i;
+	for (i = 0; i < RAM_SIZE; i++) {
+		if (memory->files[i]) {
+			fclose(memory->files[i]);
+			memory->files[i] = NULL;
+		}
+	}
 }
 
 /* ----------------------------------------------------------------------------

@@ -21,10 +21,11 @@
 void print_debug(char *parsed_words[MAX_CMD_LENGTH], int num_of_words);
 void print_help();
 int print_var(char *parsed_words[MAX_CMD_LENGTH], int num_of_words);
-int run(char *parsed_words[MAX_CMD_LENGTH], int num_of_words);
+int run_file(char *parsed_words[MAX_CMD_LENGTH], int num_of_words);
 int set_var(char *parsed_words[MAX_CMD_LENGTH], int num_of_words);
 int read_and_exec_file(char *file);
 int exec(char *parsed_words[MAX_CMD_LENGTH], int num_of_words);
+int exec_from_cpu(char *parsed_words[MAX_CMD_LENGTH], int num_of_words); 
 
 FILE *files[MAX_FILE_NUMBER];
 
@@ -36,8 +37,10 @@ FILE *files[MAX_FILE_NUMBER];
  *            - print
  *            - run
  *            - set
+ *            - exec
  * @param input  - parsed_words An array of strings
  *        input  - num_of_words An integer representing the number of strings
+ *        input  - is_cpu       Does the input come from the CPU
  * @return int - Status code
  *                  0  - No error
  *                 -1  - Input array of strings is null
@@ -49,10 +52,9 @@ FILE *files[MAX_FILE_NUMBER];
  *                 -7  - Undefined command
  * ----------------------------------------------------------------------------
  */
-int interpret(char *parsed_words[MAX_CMD_LENGTH], int num_of_words) {
-	for (int i = 0; i < num_of_words; i++) {
-		printf("%s \n", parsed_words[i]);
-	}
+int interpret(char *parsed_words[MAX_CMD_LENGTH],
+              int num_of_words,
+              int is_cpu) {
 	int err;
 	// Catch if input is null
 	if (!parsed_words) {
@@ -94,7 +96,7 @@ int interpret(char *parsed_words[MAX_CMD_LENGTH], int num_of_words) {
 		 * Handles run command
 		 * ------------------------------------------------------------
 		 */
-		err = run(parsed_words, num_of_words);
+		err = run_file(parsed_words, num_of_words);
 		return err;
 	} else if (strcmp(parsed_words[0], "set") == 0) {
 		/* ------------------------------------------------------------
@@ -108,10 +110,11 @@ int interpret(char *parsed_words[MAX_CMD_LENGTH], int num_of_words) {
 		 * Handles exec command
 		 * ------------------------------------------------------------
 		 */
-		for (int i = 0; i < num_of_words; i++) {
-			printf("%d %s\n", i, parsed_words[i]);
+		if (is_cpu) {
+			err = exec_from_cpu(parsed_words, num_of_words);
+		} else {
+			err = exec(parsed_words, num_of_words);
 		}
-		err = exec(parsed_words, num_of_words);
 		return err;
 	} else {
 		/* ------------------------------------------------------------
@@ -202,7 +205,7 @@ int print_var (char *parsed_words[MAX_CMD_LENGTH], int num_of_words) {
  *                 -7 - Number of arguments is not as expected          
  * ----------------------------------------------------------------------------
  */
-int run (char *parsed_words[MAX_CMD_LENGTH], int num_of_words) {
+int run_file (char *parsed_words[MAX_CMD_LENGTH], int num_of_words) {
 	int err;
 	if (num_of_words != 2) {
 		printf(GENERIC_EXPECTED_MSG "run <filename>\n");
@@ -232,14 +235,18 @@ int run (char *parsed_words[MAX_CMD_LENGTH], int num_of_words) {
  */
 int set_var (char *parsed_words[MAX_CMD_LENGTH], int num_of_words) {
 	int i, j, err;
-	char *key = parsed_words[1];
+	char key[MAX_CMD_LENGTH];
 	char value[MAX_CMD_LENGTH];
 	int count = 0;
+
 	// Checks if the right number of arguments is obtained
 	if (num_of_words < 3) {
 		printf(GENERIC_EXPECTED_MSG "set <varname> <value>\n"); 
 		return -7;
 	}
+
+	// Copy key in
+	strncpy(key, parsed_words[1], MAX_CMD_LENGTH);
 
 	// Used to concatenate multiple string arguments together 
 	for (i = 2; i < num_of_words; i++) {
@@ -291,7 +298,7 @@ int read_and_exec_file (char *filename) {
 	// If the file exists, read each line
 	if (file) {
 		while (fgets(line, MAX_LINE_LENGTH, file)) {
-			execute_line_from_script(line);
+			run_line_from_script(line, 0);
 		}
 		fclose(file);
 		return 0;
@@ -304,7 +311,7 @@ int read_and_exec_file (char *filename) {
  * @param input  - cmd    - A string of command
  * ----------------------------------------------------------------------------
  */
-void execute_line_from_script(char *line) {
+void run_line_from_script(char *line, int is_cpu) {
 	int err;
 	char *words[MAX_CMD_LENGTH];
 	char trimmed_cmd[MAX_CMD_LENGTH];
@@ -321,7 +328,7 @@ void execute_line_from_script(char *line) {
 		num_of_words = 0;
 	}
 
-	err = interpret(words, num_of_words);
+	err = interpret(words, num_of_words, is_cpu);
 	handle_error(err);
 
 	// Clear line
@@ -361,11 +368,37 @@ int exec(char *parsed_words[MAX_CMD_LENGTH], int num_of_words) {
 		}
 	}
 
-	for (i = 0; i < MAX_FILE_NUMBER; i++) {
-		printf("%p\n", files[i]);
+	scheduler();
+
+	return 0;
+}
+
+/* ----------------------------------------------------------------------------
+ * @brief Similar implementation adapted for running recursive execs.
+ * ----------------------------------------------------------------------------
+ */
+int exec_from_cpu(char *parsed_words[MAX_CMD_LENGTH], int num_of_words) {
+	FILE *files[3];
+	char word[3][MAX_CMD_LENGTH];
+	int i = 0;
+	if (num_of_words > 4 || num_of_words < 2) {
+		printf(GENERIC_EXPECTED_MSG "exec <script1> [<script2>] [<script3>]\n"); 
+		return -7;
 	}
 
-	scheduler();
+	// Load into memory
+	for (i = 1; i < num_of_words; i++) {
+		strncpy(word[i - 1], parsed_words[i], MAX_CMD_LENGTH);
+		files[i - 1] = fopen(word[i - 1], "r");
+
+		// Cannot find file
+		if (!files[i - 1]) {
+			printf("%s cannot be found\n", word[i - 1]);
+			continue;
+		} else {
+			myinit(files[i - 1]);
+		}
+	}
 
 	return 0;
 }

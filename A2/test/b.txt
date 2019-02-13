@@ -16,4 +16,5 @@ print c
 print d
 print
 run abc.txt
+exec test/testfile.txt
 quit

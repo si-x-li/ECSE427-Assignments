@@ -13,4 +13,4 @@
  */
 void init_cpu();
 int context_switch(pcb_t *pcb);
-int execute();
+int run();

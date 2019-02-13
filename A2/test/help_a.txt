@@ -1,0 +1,3 @@
+exec test/help_d.txt test/help_e.txt test/help_f.txt
+set h 252
+print h
