@@ -100,6 +100,7 @@ void scheduler() {
 		pcb = remove_from_ready();
 		context_switch(pcb);
 	}
+	printf("Execution completed...\n");
 }
 
 /* ----------------------------------------------------------------------------

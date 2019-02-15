@@ -27,8 +27,6 @@ int read_and_exec_file(char *file);
 int exec(char *parsed_words[MAX_CMD_LENGTH], int num_of_words);
 int exec_from_cpu(char *parsed_words[MAX_CMD_LENGTH], int num_of_words); 
 
-FILE *files[MAX_FILE_NUMBER];
-
 /* ----------------------------------------------------------------------------
  * @brief Interprets an array of strings and calls the appropriate function
  *        to handle the user input. Supports the following commands
@@ -342,13 +340,12 @@ void run_line_from_script(char *line, int is_cpu) {
  * @return int - Status code
  *                  0 - No errors
  *                 -7 - Number of arguments is not as expected
- *                 -8 - Could no execute script due to lack of memory
  * ----------------------------------------------------------------------------
  */
 int exec(char *parsed_words[MAX_CMD_LENGTH], int num_of_words) {
 	FILE *files[3];
 	char word[3][MAX_CMD_LENGTH];
-	int i = 0;
+	int i = 0, j = 0, skip = 0;
 	if (num_of_words > 4 || num_of_words < 2) {
 		printf(GENERIC_EXPECTED_MSG "exec <script1> [<script2>] [<script3>]\n"); 
 		return -7;
@@ -356,13 +353,28 @@ int exec(char *parsed_words[MAX_CMD_LENGTH], int num_of_words) {
 
 	// Load into memory
 	for (i = 1; i < num_of_words; i++) {
+		skip = 0;
 		strncpy(word[i - 1], parsed_words[i], MAX_CMD_LENGTH);
+		// Checks if the script has already been loaded previously
+		for (j = 0; j < i - 1; j++) {
+			if (strcmp(word[j], word[i - 1]) == 0 && files[j]) {
+				printf(GENERIC_ERROR_MSG " Script %s already loaded.\n",
+				       word[i - 1]);
+				skip = 1;
+				break;
+			}
+		}
+
+		// Skip this script since it has already been loaded
+		if (skip == 1) {
+			continue;
+		}
+
 		files[i - 1] = fopen(word[i - 1], "r");
 
 		// Cannot find file
 		if (!files[i - 1]) {
 			printf("%s cannot be found\n", word[i - 1]);
-			continue;
 		} else {
 			myinit(files[i - 1]);
 		}
@@ -396,6 +408,7 @@ int exec_from_cpu(char *parsed_words[MAX_CMD_LENGTH], int num_of_words) {
 			printf("%s cannot be found\n", word[i - 1]);
 			continue;
 		} else {
+
 			myinit(files[i - 1]);
 		}
 	}
