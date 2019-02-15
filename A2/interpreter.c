@@ -24,8 +24,7 @@ int print_var(char *parsed_words[MAX_CMD_LENGTH], int num_of_words);
 int run_file(char *parsed_words[MAX_CMD_LENGTH], int num_of_words);
 int set_var(char *parsed_words[MAX_CMD_LENGTH], int num_of_words);
 int read_and_exec_file(char *file);
-int exec(char *parsed_words[MAX_CMD_LENGTH], int num_of_words);
-int exec_from_cpu(char *parsed_words[MAX_CMD_LENGTH], int num_of_words); 
+int exec(char *parsed_words[MAX_CMD_LENGTH], int num_of_words, int is_cpu);
 
 /* ----------------------------------------------------------------------------
  * @brief Interprets an array of strings and calls the appropriate function
@@ -108,11 +107,7 @@ int interpret(char *parsed_words[MAX_CMD_LENGTH],
 		 * Handles exec command
 		 * ------------------------------------------------------------
 		 */
-		if (is_cpu) {
-			err = exec_from_cpu(parsed_words, num_of_words);
-		} else {
-			err = exec(parsed_words, num_of_words);
-		}
+		err = exec(parsed_words, num_of_words, is_cpu);
 		return err;
 	} else {
 		/* ------------------------------------------------------------
@@ -342,7 +337,7 @@ void run_line_from_script(char *line, int is_cpu) {
  *                 -7 - Number of arguments is not as expected
  * ----------------------------------------------------------------------------
  */
-int exec(char *parsed_words[MAX_CMD_LENGTH], int num_of_words) {
+int exec(char *parsed_words[MAX_CMD_LENGTH], int num_of_words, int is_cpu) {
 	FILE *files[3];
 	char word[3][MAX_CMD_LENGTH];
 	int i = 0, j = 0, skip = 0;
@@ -380,37 +375,8 @@ int exec(char *parsed_words[MAX_CMD_LENGTH], int num_of_words) {
 		}
 	}
 
-	scheduler();
-
-	return 0;
-}
-
-/* ----------------------------------------------------------------------------
- * @brief Similar implementation adapted for running recursive execs.
- * ----------------------------------------------------------------------------
- */
-int exec_from_cpu(char *parsed_words[MAX_CMD_LENGTH], int num_of_words) {
-	FILE *files[3];
-	char word[3][MAX_CMD_LENGTH];
-	int i = 0;
-	if (num_of_words > 4 || num_of_words < 2) {
-		printf(GENERIC_EXPECTED_MSG "exec <script1> [<script2>] [<script3>]\n"); 
-		return -7;
-	}
-
-	// Load into memory
-	for (i = 1; i < num_of_words; i++) {
-		strncpy(word[i - 1], parsed_words[i], MAX_CMD_LENGTH);
-		files[i - 1] = fopen(word[i - 1], "r");
-
-		// Cannot find file
-		if (!files[i - 1]) {
-			printf("%s cannot be found\n", word[i - 1]);
-			continue;
-		} else {
-
-			myinit(files[i - 1]);
-		}
+	if (is_cpu == 0) {
+		scheduler();
 	}
 
 	return 0;
