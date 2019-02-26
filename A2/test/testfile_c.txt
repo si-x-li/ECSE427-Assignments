@@ -1,0 +1,4 @@
+set c I am set in testfile_c.txt
+print c
+print a
+print b

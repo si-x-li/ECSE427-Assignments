@@ -1,9 +1,0 @@
-exec test/help_a.txt test/help_b.txt test/help_c.txt
-set h 5388235
-print h
-set a 01328
-print 01328
-print a
-run test/a.txt
-help
-help

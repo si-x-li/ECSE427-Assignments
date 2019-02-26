@@ -1,2 +1,0 @@
-set h 029591253988821359021350hodhafhh1uh3bbisjduifauifh
-print h

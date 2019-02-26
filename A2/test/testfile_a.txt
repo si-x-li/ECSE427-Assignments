@@ -1,0 +1,10 @@
+set a I am set in testfile_a.txt
+print a
+print b
+print c
+help
+run test/testfile_d.txt
+print a
+print b
+set warning If you see this then something went wrong because testfile_b.txt is supposed to trigger a quit command
+print warning

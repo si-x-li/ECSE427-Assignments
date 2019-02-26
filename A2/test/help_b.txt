@@ -1,1 +1,0 @@
-exec test/help_h.txt test/help_i.txt test/help_j.txt

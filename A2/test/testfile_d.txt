@@ -1,0 +1,12 @@
+set script testfile_d.txt is executing a run function currently
+print script
+set script testfile_d.txt is executing a help function
+print script
+help
+set script testfile_d.txt is doing something random
+print script
+print script
+print oie
+print testfile_d.txt
+set script testfile_d.txt is finishing up
+print script

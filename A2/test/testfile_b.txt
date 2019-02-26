@@ -1,0 +1,7 @@
+set b I am set in testfile_b.txt
+set a I am changed in testfile_b.txt
+help
+print c
+set b I am exiting from testfile_b.txt
+print b
+quit
