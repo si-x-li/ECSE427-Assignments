@@ -19,6 +19,7 @@
 #include "interpreter.h"
 
 int main() {
+	// Initializes data structures used for this assignment
 	init_cpu();
 	init_ram();
 	init_ready_queue();

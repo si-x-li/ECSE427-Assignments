@@ -44,8 +44,8 @@ void init_ready_queue() {
 }
 
 /* ----------------------------------------------------------------------------
- * @brief Loads the program to RAM, creates the PCB and add the program to the
- *        ready queue.
+ * @brief Loads the program to RAM, creates the PCB, PCB node and adds the
+ *        program to the ready queue.
  * @param input  - file   A file pointer
  * @return int - Status Code
  *                  0 - No errors
@@ -118,7 +118,8 @@ void scheduler() {
 }
 
 /* ----------------------------------------------------------------------------
- * @brief Removes a PCB from the ready queue
+ * @brief Removes a PCB from the ready queue.
+ * @return A PCB node if the ready queue is not empty. Null otherwise
  * ----------------------------------------------------------------------------
  */
 pcb_node_t *remove_from_ready() {
@@ -142,8 +143,8 @@ pcb_node_t *remove_from_ready() {
 }
 
 /* ----------------------------------------------------------------------------
- * @brief Adds a PCB to the ready queue.
- * @param input  - pcb  A pointer to a PCB
+ * @brief Adds a PCB node to the ready queue.
+ * @param input  - pcb_node  A pointer to a PCB node
  * ----------------------------------------------------------------------------
  */
 void add_to_ready(pcb_node_t *pcb_node) {
