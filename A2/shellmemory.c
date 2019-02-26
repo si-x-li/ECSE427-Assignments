@@ -122,8 +122,8 @@ int insert_first (char *key, char *value) {
  * ----------------------------------------------------------------------------
  */
 int insert (unsigned int position, char *key, char *value) {
-	int i;
-	int size;
+	unsigned int i;
+	unsigned int size;
 	node_t *current_node;
 	node_t *next_node;
 
@@ -361,9 +361,9 @@ int update_value_by_key (char *key, char *value) {
  * ----------------------------------------------------------------------------
  */
 int get_value (unsigned int position, char *output_value) {
-	int i;
+	unsigned int i;
 	node_t *current_node;
-	int size;
+	unsigned int size;
 
 	// Check if list is null
 	if (!list) {
@@ -385,7 +385,7 @@ int get_value (unsigned int position, char *output_value) {
 	}
 
 	current_node = list->head;
-	for (i = 0; i < (int) (position - 1); i++) {
+	for (i = 0; i < position - 1; i++) {
 		current_node = current_node->next;
 	}
 

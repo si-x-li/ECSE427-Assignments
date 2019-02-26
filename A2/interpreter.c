@@ -227,7 +227,8 @@ int run_file (char *parsed_words[MAX_CMD_LENGTH], int num_of_words) {
  * ----------------------------------------------------------------------------
  */
 int set_var (char *parsed_words[MAX_CMD_LENGTH], int num_of_words) {
-	int i, j, err;
+	int i, err;
+       	unsigned int j;
 	char key[MAX_CMD_LENGTH];
 	char value[MAX_CMD_LENGTH];
 	int count = 0;

@@ -9,26 +9,31 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "kernel.h"
+#include "pcb.h"
 #include "ram.h"
 #include "cpu.h"
 
 /*
- * Ready queue implemented as FIFO and RR
+ * Ready queue and pcb_node implemented as FIFO and RR
  */
-typedef struct ready_queue ready_queue_t;
-struct ready_queue {
-	pcb_t *first;
-	pcb_t *last;
+typedef struct pcb_node pcb_node_t;
+struct pcb_node {
+	pcb_t *pcb;
+	pcb_node_t *next;
 };
 
+typedef struct ready_queue ready_queue_t;
+struct ready_queue {
+	pcb_node_t *first;
+	pcb_node_t *last;
+};
 ready_queue_t *queue;
 
 /*
  * Functions specific to kernel.c
  */
-void add_to_ready(pcb_t *pcb);
-pcb_t *remove_from_ready();
-void print_ready_queue();
+void add_to_ready(pcb_node_t *pcb);
+pcb_node_t *remove_from_ready();
 
 /* ----------------------------------------------------------------------------
  * @brief Initializes the ready queue.
@@ -48,19 +53,27 @@ void init_ready_queue() {
  * ----------------------------------------------------------------------------
  */
 int myinit(FILE *file) {
-	// Allocate memory to PCB
+	pcb_node_t *pcb_node;
 	pcb_t *pcb;
 	// Add the file to RAM and create the PCB
 	if (add_to_ram(file) == 0) {
 		pcb = make_pcb(file);
+		pcb_node = (pcb_node_t *) malloc(sizeof(pcb_node_t));
 		if (!pcb) {
 			// If PCB was not created successfully, free RAM and close file
 			remove_from_ram(file);
 			fclose(file);
 			return -1;
 		}
+		if (!pcb_node) {
+			remove_from_ram(file);
+			fclose(file);
+			free_pcb(pcb);
+			return -1;
+		}
+		pcb_node->pcb = pcb;
 		// If PCB was successfully created, add to ready queue
-		add_to_ready(pcb);
+		add_to_ready(pcb_node);
 	} else {
 		// If the file was not added to RAM, close file
 		fclose(file);
@@ -74,7 +87,7 @@ int myinit(FILE *file) {
  * ----------------------------------------------------------------------------
  */
 void scheduler() {
-	pcb_t *pcb;
+	pcb_node_t *pcb_node;
 	// Check if there are any tasks scheduled
 	if (!queue->first) {
 		printf("No tasks scheduled on the ready queue\n");
@@ -83,22 +96,23 @@ void scheduler() {
 
 	// Indicate start of execution
 	printf("Start execution...\n");
-	pcb = remove_from_ready();
-	context_switch(pcb);
-	while(pcb) {
+	pcb_node = remove_from_ready();
+	while(pcb_node) {
+		// Switch the pcb into the cpu
+		context_switch(pcb_node->pcb);
 		// Execute
 		if (run() == 0) {
-			// Process still has lines add to ready queue
-			add_to_ready(pcb);
+			// Process still has lines add back to ready queue
+			add_to_ready(pcb_node);
 		} else {
 			// Free up RAM and PCB
-			remove_from_ram(pcb->pc);
-			free_pcb(pcb);
+			remove_from_ram(pcb_node->pcb->pc);
+			free_pcb(pcb_node->pcb);
+			free(pcb_node);
 		}
 
-		// Obtain the next PCB from the ready_queue
-		pcb = remove_from_ready();
-		context_switch(pcb);
+		// Obtain the next PCB node from the ready_queue
+		pcb_node = remove_from_ready();
 	}
 	printf("Execution completed...\n");
 }
@@ -107,8 +121,8 @@ void scheduler() {
  * @brief Removes a PCB from the ready queue
  * ----------------------------------------------------------------------------
  */
-pcb_t *remove_from_ready() {
-	pcb_t *temp;
+pcb_node_t *remove_from_ready() {
+	pcb_node_t *temp;
 	if (!queue->first) {
 		// Queue is empty
 		return NULL;
@@ -132,32 +146,14 @@ pcb_t *remove_from_ready() {
  * @param input  - pcb  A pointer to a PCB
  * ----------------------------------------------------------------------------
  */
-void add_to_ready(pcb_t *pcb) {
+void add_to_ready(pcb_node_t *pcb_node) {
 	if (!queue->first || !queue->last) {
 		// First PCB in queue
-		queue->first = pcb;
-		queue->last = pcb;
+		queue->first = pcb_node;
+		queue->last = pcb_node;
 	} else {
 		// Other PCBs are in queue
-		queue->last->next = pcb;
-		queue->last = pcb;
+		queue->last->next = pcb_node;
+		queue->last = pcb_node;
 	}
-}
-
-/* ----------------------------------------------------------------------------
- * @brief Prints out the ready queue.
- * ----------------------------------------------------------------------------
- */
-void print_ready_queue() {
-	pcb_t *pcb;
-	if (!queue->first) {
-		return;
-	}
-	pcb = queue->first;
-	printf("\n\nREADY QUEUE\n");
-	while(pcb) {
-		printf("%p\n", pcb->pc);
-		pcb = pcb->next;
-	}
-	printf("READY QUEUE\n\n");
 }

@@ -9,12 +9,13 @@
 /*
  * PCB structure
  */
+#ifndef PCB_H
+#define PCB_H
 typedef struct pcb pcb_t;
-
 struct pcb {
 	FILE *pc;
-	pcb_t *next;
 };
+#endif
 
 /*
  * PCB interfaces
