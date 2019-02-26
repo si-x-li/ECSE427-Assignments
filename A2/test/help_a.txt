@@ -1,3 +1,7 @@
 exec test/help_d.txt test/help_e.txt test/help_f.txt
 set h 252
 print h
+set o 98883
+set o 89105321
+print o
+print h

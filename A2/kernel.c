@@ -95,7 +95,7 @@ void scheduler() {
 	}
 
 	// Indicate start of execution
-	printf("Start execution...\n");
+	printf("Start execution...\n\n");
 	pcb_node = remove_from_ready();
 	while(pcb_node) {
 		// Switch the pcb into the cpu
