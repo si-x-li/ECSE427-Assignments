@@ -166,8 +166,6 @@ int update_page_table(pcb_t *pcb,
                       int page_number,
                       int frame_number,
                       int victim_frame) {
-	int i;
-
 	if (!pcb) {
 		return -1;
 	}
@@ -180,14 +178,6 @@ int update_page_table(pcb_t *pcb,
 		pcb->page_table[frame_number] = page_number;
 	} else {
 		pcb->page_table[victim_frame] = page_number;
-	}
-
-	for (i = 0; i < RAM_SIZE; i++) {
-		printf("DEBUG PAGE_TABLE: %d\n", pcb->page_table[i]);
-	}
-
-	for (i = 0; i < RAM_SIZE; i++) {
-		printf("DEBUG RAM: %p\n", ram[i]);
 	}
 
 	return 0;

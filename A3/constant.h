@@ -46,10 +46,15 @@
 #define INITIAL_FRAME_NUMBER    2
 
 /*
+ * Declare quanta size
+ */
+#define QUANTA                  2
+
+/*
  * Define system-wide constants
  */
 #define SHELL_NAME              "Si Xun Li"
-#define SHELL_VERSION           "2.0"
-#define UPDATE_DATE             "February 2019"
-#define KERNEL_VERSION          "1.0"
+#define SHELL_VERSION           "3.0"
+#define UPDATE_DATE             "March 2019"
+#define KERNEL_VERSION          "2.0"
 #define TAB                     "    "

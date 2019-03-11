@@ -14,8 +14,9 @@
 #include "constant.h"
 #include "memorymanager.h"
 
-#define QUANTA 2
-
+/*
+ * Local function
+ */
 int page_fault();
 
 /*
@@ -30,15 +31,22 @@ struct cpu {
 };
 
 cpu_t *cpu;
+
+// Temporarily stores the PCB while the process is being executed
 pcb_t *pcb_storage;
 
 /* ----------------------------------------------------------------------------
- * @brief Initializes the CPU structure.
+ * @brief Initializes the local CPU structure. This code should be called only
+ *        a single time.
  * ----------------------------------------------------------------------------
  */
 void init_cpu() {
-	cpu = (cpu_t *) malloc(sizeof(cpu_t));
-	pcb_storage = (pcb_t *) malloc(sizeof(pcb_t));
+	if (!cpu) {
+		cpu = (cpu_t *) malloc(sizeof(cpu_t));
+	}
+	if (!pcb_storage) {
+		pcb_storage = (pcb_t *) malloc(sizeof(pcb_t));
+	}
 }
 
 /* ----------------------------------------------------------------------------
@@ -80,6 +88,7 @@ int run() {
 		}
 	}
 
+	// Checks for the reason for stopping the execution of the script
 	return page_fault();
 }
 
@@ -98,7 +107,7 @@ int page_fault() {
 		// Ran out of quanta
 		pcb_storage->pc_offset = cpu->offset;
 	} else {
-		// Ran out of quanta and/or new page is required
+		// Page replacement is needed
 		pcb_storage->pc_page++;
 		
 		if (pcb_storage->pc_page > pcb_storage->pages_max) {

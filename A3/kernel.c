@@ -214,13 +214,14 @@ int update_victim_page_table(int frame_number, int victim_number) {
 int main() {
 	boot();
 
+	// Initializes the ready queue
 	queue = (ready_queue_t *) malloc(sizeof(ready_queue_t));
 
 	// Initializes data structures used for this assignment
 	init_cpu();
 	init_shell_memory();
 
-	// This function still has to be called due to dependency
+	// Initializes the RAM. This function still has to be called due to dependency
 	init_ram();
 
 	// Keep track of errors

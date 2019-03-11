@@ -130,12 +130,12 @@ int interpret(char *parsed_words[MAX_CMD_LENGTH],
  * ----------------------------------------------------------------------------
  */
 void print_debug (char *parsed_words[MAX_CMD_LENGTH], int num_of_words) {
+	int i;
 	// Checks if parsed_words is null
 	if (!parsed_words) {
 		return;
 	}
 
-	int i;
 	for (i = 1; i < num_of_words; i++) {
 		printf("%s\n", parsed_words[i]);
 	}
@@ -170,13 +170,14 @@ void print_help () {
  */
 int print_var (char *parsed_words[MAX_CMD_LENGTH], int num_of_words) {
 	int err;
+	char output_value[MAX_CMD_LENGTH];
+	char *key;
 	if (num_of_words != 2) {
 		printf(GENERIC_EXPECTED_MSG "print <varname>\n");
 		return -7;
 	}
 
-	char output_value[MAX_CMD_LENGTH];
-	char *key = parsed_words[1];
+	key = parsed_words[1];
 
 	// Search for the key and fetch the value by key if found
 	err = get_value_by_key(key, output_value);
@@ -202,12 +203,13 @@ int print_var (char *parsed_words[MAX_CMD_LENGTH], int num_of_words) {
  */
 int run_file (char *parsed_words[MAX_CMD_LENGTH], int num_of_words) {
 	int err;
+	char *filename;
 	if (num_of_words != 2) {
 		printf(GENERIC_EXPECTED_MSG "run <filename>\n");
 		return -7;
 	}
 
-	char *filename = parsed_words[1];
+	filename = parsed_words[1];
 	err = read_and_exec_file(filename);
 
 	// If file could not be read or directory issues
@@ -241,7 +243,7 @@ int set_var (char *parsed_words[MAX_CMD_LENGTH], int num_of_words) {
 		return -7;
 	}
 
-	// Copy key in
+	// Copy key into a dedicated buffer to avoid corruption
 	strncpy(key, parsed_words[1], MAX_CMD_LENGTH);
 
 	// Used to concatenate multiple string arguments together 
@@ -283,13 +285,14 @@ int set_var (char *parsed_words[MAX_CMD_LENGTH], int num_of_words) {
  */
 int read_and_exec_file (char *filename) {
 	char line[MAX_LINE_LENGTH];
+	FILE *file;
 
 	// Checks if filename is null
 	if (!filename) {
 		return -1;
 	}
 
-	FILE *file = fopen(filename, "r");
+	file = fopen(filename, "r");
 
 	// If the file exists, read each line
 	if (file) {
