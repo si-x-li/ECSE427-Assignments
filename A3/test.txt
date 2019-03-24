@@ -4,4 +4,8 @@ set a 5252
 print a
 help
 exec test_exec.txt test_exec.txt test_exec.txt
+set wait wait
+print wait
+print wait
+print wait
 quit

@@ -2,7 +2,7 @@
  * @file RAM.C
  * @author Si Xun Li - 260674916
  * @version 1.0
- * @brief 
+ * @brief This file contains the legacy RAM structure.
  * ----------------------------------------------------------------------------
  */
 

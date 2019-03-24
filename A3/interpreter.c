@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "shell.h"
+#include "ram.h"
 #include "kernel.h"
 #include "interpreter.h"
 #include "memorymanager.h"
@@ -19,13 +20,13 @@
 /*
  * Local functions
  */
-void print_debug(char *parsed_words[MAX_CMD_LENGTH], int num_of_words);
+void print_debug(char **parsed_words, int num_of_words);
 void print_help();
-int print_var(char *parsed_words[MAX_CMD_LENGTH], int num_of_words);
-int run_file(char *parsed_words[MAX_CMD_LENGTH], int num_of_words);
-int set_var(char *parsed_words[MAX_CMD_LENGTH], int num_of_words);
+int print_var(char **parsed_words, int num_of_words);
+int run_file(char **parsed_words, int num_of_words);
+int set_var(char **parsed_words, int num_of_words);
 int read_and_exec_file(char *file);
-int exec(char *parsed_words[MAX_CMD_LENGTH], int num_of_words, int is_cpu);
+int exec(char **parsed_words, int num_of_words, int is_cpu);
 
 /* ----------------------------------------------------------------------------
  * @brief Interprets an array of strings and calls the appropriate function
@@ -50,10 +51,10 @@ int exec(char *parsed_words[MAX_CMD_LENGTH], int num_of_words, int is_cpu);
  *                 -7  - Undefined command
  * ----------------------------------------------------------------------------
  */
-int interpret(char *parsed_words[MAX_CMD_LENGTH],
+int interpret(char **parsed_words,
               int num_of_words,
               int is_cpu) {
-	int err;
+	int err, i, j;
 	// Catch if input is null
 	if (!parsed_words) {
 		err = -1;
@@ -73,6 +74,13 @@ int interpret(char *parsed_words[MAX_CMD_LENGTH],
 		 * ------------------------------------------------------------
 		 */
 		err = -3;
+		clear_ram();
+		for (i = 0; i < RAM_SIZE; i++) {
+			if (ram[i] != NULL) {
+				fclose(ram[i]);
+				ram[i] = NULL;
+			}
+		}
 		system("rm -rf BackingStore");
 		return err;
 	} else if (strcmp(parsed_words[0], "help") == 0) {
@@ -129,7 +137,7 @@ int interpret(char *parsed_words[MAX_CMD_LENGTH],
  *        input  - num_of_words  Number of strings
  * ----------------------------------------------------------------------------
  */
-void print_debug (char *parsed_words[MAX_CMD_LENGTH], int num_of_words) {
+void print_debug (char **parsed_words, int num_of_words) {
 	int i;
 	// Checks if parsed_words is null
 	if (!parsed_words) {
@@ -168,7 +176,7 @@ void print_help () {
  *                 -7 - Number of arguments is not as expected
  * ----------------------------------------------------------------------------
  */
-int print_var (char *parsed_words[MAX_CMD_LENGTH], int num_of_words) {
+int print_var (char **parsed_words, int num_of_words) {
 	int err;
 	char output_value[MAX_CMD_LENGTH];
 	char *key;
@@ -201,7 +209,7 @@ int print_var (char *parsed_words[MAX_CMD_LENGTH], int num_of_words) {
  *                 -7 - Number of arguments is not as expected          
  * ----------------------------------------------------------------------------
  */
-int run_file (char *parsed_words[MAX_CMD_LENGTH], int num_of_words) {
+int run_file (char **parsed_words, int num_of_words) {
 	int err;
 	char *filename;
 	if (num_of_words != 2) {
@@ -230,7 +238,7 @@ int run_file (char *parsed_words[MAX_CMD_LENGTH], int num_of_words) {
  *                 -7 - Number of arguments is not as expected
  * ----------------------------------------------------------------------------
  */
-int set_var (char *parsed_words[MAX_CMD_LENGTH], int num_of_words) {
+int set_var (char **parsed_words, int num_of_words) {
 	int i, err;
        	unsigned int j;
 	char key[MAX_CMD_LENGTH];
@@ -311,11 +319,17 @@ int read_and_exec_file (char *filename) {
  * ----------------------------------------------------------------------------
  */
 void run_line_from_script(char *line, int is_cpu) {
-	int err;
-	char *words[MAX_CMD_LENGTH];
+	int err, i;
+	char **words;
 	char trimmed_cmd[MAX_CMD_LENGTH];
 	int trimmed_cmd_len;
 	int num_of_words;
+
+	words = malloc(sizeof(char *) * (MAX_CMD_LENGTH / 2));
+	for (i = 0; i < (MAX_CMD_LENGTH / 2); i++) {
+		words[i] = malloc(MAX_CMD_LENGTH);
+	}
+
 
 	printf("$%s", line);
 	trimmed_cmd_len = trim(line, strlen(line), trimmed_cmd);
@@ -328,6 +342,13 @@ void run_line_from_script(char *line, int is_cpu) {
 	}
 
 	err = interpret(words, num_of_words, is_cpu);
+	
+	for (i = 0; i < (MAX_CMD_LENGTH / 2); i++) {
+		free(words[i]);
+	}
+	free(words);
+
+
 	handle_error(err);
 
 	// Clear line
@@ -343,7 +364,7 @@ void run_line_from_script(char *line, int is_cpu) {
  *                 -7 - Number of arguments is not as expected
  * ----------------------------------------------------------------------------
  */
-int exec(char *parsed_words[MAX_CMD_LENGTH], int num_of_words, int is_cpu) {
+int exec(char **parsed_words, int num_of_words, int is_cpu) {
 	FILE *file;
 	int i = 0;
 	if (num_of_words > 4 || num_of_words < 2) {

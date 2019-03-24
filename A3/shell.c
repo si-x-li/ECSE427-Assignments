@@ -37,11 +37,15 @@
  * ----------------------------------------------------------------------------
  */
 int prompt_command() {
-	int num_of_words;
-	int trimmed_cmd_len;
+	int num_of_words, trimmed_cmd_len, err, i;
 	char cmd[MAX_CMD_LENGTH];
 	char trimmed_cmd[MAX_CMD_LENGTH];
-	char *words[MAX_CMD_LENGTH];
+	char **words;
+
+	words = malloc(sizeof(char *) * (MAX_CMD_LENGTH / 2));
+	for (i = 0; i < (MAX_CMD_LENGTH / 2); i++) {
+		words[i] = malloc(MAX_CMD_LENGTH);
+	}
 
 	// Prompt user for input
 	printf("$");
@@ -64,12 +68,18 @@ int prompt_command() {
 	}
 
 	if (num_of_words > 0) {
-		return interpret(words, num_of_words, 0);
+		err = interpret(words, num_of_words, 0);
 	} else if (num_of_words == 0) {
-		return -20;
+		err = -20;
 	} else {
-		return -21;
+		err = -21;
 	}
+
+	for (i = 0; i < (MAX_CMD_LENGTH / 2); i++) {
+		free(words[i]);
+	}
+	free(words);
+	return err;
 }
 
 /* ----------------------------------------------------------------------------
@@ -141,7 +151,7 @@ int trim(const char *str, int str_size, char *trimmed_str) {
  *                 -2 - Output words is null
  * ----------------------------------------------------------------------------
  */
-int parser(const char *str, char *words[MAX_CMD_LENGTH]) {
+int parser(const char *str, char **words) {
 	char str_copy[MAX_CMD_LENGTH];
 	char *word;
 	int i = 0;
@@ -162,7 +172,7 @@ int parser(const char *str, char *words[MAX_CMD_LENGTH]) {
 	// Split user input using space as a token delimiter
 	word = strtok(str_copy, " ");
 	while (word != NULL) {
-		words[i] = word;
+		strncpy(words[i], word, MAX_CMD_LENGTH);
 		word = strtok(NULL, " ");
 		i++;
 	}
