@@ -16,7 +16,7 @@
  */
 typedef struct ram ram_t;
 struct ram {
-	FILE *files[RAM_SIZE];
+	FILE *files[RAM_SIZE * RAM_SIZE];
 };
 ram_t *memory;
 
@@ -38,7 +38,7 @@ void init_ram() {
  */
 int add_to_ram(FILE *file) {
 	int i;
-	for (i = 0; i < RAM_SIZE; i++) {
+	for (i = 0; i < (RAM_SIZE * RAM_SIZE); i++) {
 		if(!memory->files[i]) {
 			memory->files[i] = file;
 			printf("Loaded file to memory\n");
@@ -60,7 +60,7 @@ int add_to_ram(FILE *file) {
  */
 int remove_from_ram(FILE *file) {
 	int i;
-	for (i = 0; i < RAM_SIZE; i++) {
+	for (i = 0; i < (RAM_SIZE * RAM_SIZE); i++) {
 		// Check if not null first, then compare
 		if (memory->files[i] && memory->files[i] == file) {
 			fclose(memory->files[i]);
@@ -77,7 +77,7 @@ int remove_from_ram(FILE *file) {
  */
 void clear_ram() {
 	int i;
-	for (i = 0; i < RAM_SIZE; i++) {
+	for (i = 0; i < (RAM_SIZE * RAM_SIZE); i++) {
 		if (memory->files[i]) {
 			fclose(memory->files[i]);
 			memory->files[i] = NULL;
@@ -91,7 +91,7 @@ void clear_ram() {
  */
 void print_ram() {
 	int i;
-	for (i = 0; i < RAM_SIZE; i++) {
+	for (i = 0; i < (RAM_SIZE * RAM_SIZE); i++) {
 		printf("%d %p\n", i, memory->files[i]);
 	}
 }
