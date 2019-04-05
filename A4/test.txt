@@ -1,14 +1,5 @@
-set a 11
-print a
-set a 5252
-print a
-help
-exec test_exec.txt test_exec.txt test_exec.txt
-exec test_exec.txt test_exec.txt test_exec.txt
-exec test_exec.txt test_exec.txt test_exec.txt
-exec test_exec.txt test_exec.txt test_exec.txt
-set wait wait
-print wait
-print wait
-print wait
-quit
+mount test 20 15
+write test.txt [I am testing this]
+write test2.txt [I am testing something else]
+read test.txt s
+print s

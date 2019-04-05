@@ -68,7 +68,7 @@ int prompt_command() {
 	}
 
 	if (num_of_words > 0) {
-		err = interpret(words, num_of_words, 0);
+		err = interpret(words, num_of_words, NULL, 0);
 	} else if (num_of_words == 0) {
 		err = -20;
 	} else {

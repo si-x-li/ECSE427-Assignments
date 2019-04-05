@@ -51,10 +51,15 @@
 #define QUANTA                  2
 
 /*
+ * Declare the name of the partion folder
+ */
+#define PARTITION_FOLDER_NAME   "PARTITION"
+
+/*
  * Define system-wide constants
  */
 #define SHELL_NAME              "Si Xun Li"
-#define SHELL_VERSION           "3.0"
-#define UPDATE_DATE             "March 2019"
-#define KERNEL_VERSION          "2.0"
+#define SHELL_VERSION           "4.0"
+#define UPDATE_DATE             "April 2019"
+#define KERNEL_VERSION          "3.0"
 #define TAB                     "    "

@@ -81,7 +81,7 @@ int run() {
 		cpu->quanta--;
 		cpu->offset++;
 		if (fgets(cpu->IR, MAX_CMD_LENGTH, cpu->IP)) {
-			run_line_from_script(cpu->IR, 1);
+			run_line_from_script(cpu->IR, pcb_storage, 1);
 		} else {
 			// EOF
 			return -1;

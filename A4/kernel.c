@@ -10,6 +10,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "kernel.h"
+#include "disk_driver.h"
 #include "cpu.h"
 #include "ram.h"
 #include "shellmemory.h"
@@ -223,6 +224,8 @@ int main() {
 
 	// Initializes the RAM. This function still has to be called due to dependency
 	init_ram();
+
+	initIO();
 
 	// Keep track of errors
 	int err = 0;
