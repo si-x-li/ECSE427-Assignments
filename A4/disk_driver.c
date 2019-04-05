@@ -44,6 +44,7 @@ struct FAT_FP_MAP {
 } fat_fp_map[5];
 
 int find_empty_fp();
+void clean_block(int file);
 int find_empty_block(int file);
 void skip_to_data(FILE *file);
 void update_block_information(int fat_file);
@@ -106,6 +107,12 @@ int partition_drive(char *name, int total_blocks, int block_size) {
 		return 0;
 	}
 
+	// Limit total_blocks and block_size
+	if ((block_size * total_blocks) > (MAX_CMD_LENGTH * MAX_CMD_LENGTH)) {
+		printf(GENERIC_ERROR_MSG "total size is too large (MAX = 1024 * 1024)\n");
+		return 0;
+	}
+
 	// Create relative path
 	strcpy(relative_path, PARTITION_FOLDER_NAME);
 	strcat(relative_path, "/");
@@ -148,7 +155,7 @@ int partition_drive(char *name, int total_blocks, int block_size) {
  */
 int mount(char *name) {
 	FILE *file;
-	char line[MAX_CMD_LENGTH], relative_path[MAX_CMD_LENGTH];
+	char line[MAX_CMD_LENGTH * MAX_CMD_LENGTH + 1], relative_path[MAX_CMD_LENGTH];
 	int expected, lines_read, characters_read, lines_per_fat,
 			total_blocks, block_size, count, i;
 	DIR *dir = opendir(PARTITION_FOLDER_NAME);
@@ -163,6 +170,12 @@ int mount(char *name) {
 	// Checks that the input argument is not null
 	if (!name) {
 		return 0;
+	}
+
+	// Checks if the partition is already mounted
+	if (partition.partition_name &&
+			strcmp(name, partition.partition_name) == 0) {
+		return 1;
 	}
 
 	// Create relative path
@@ -192,20 +205,20 @@ int mount(char *name) {
 					 ((lines_read - 3) % lines_per_fat) != 0 &&
 					 !is_number(line))) {
 				printf("%d", ((lines_read - 2) % lines_per_fat));
-				printf(GENERIC_ERROR_MSG "%s in partition is invalid",
+				printf(GENERIC_ERROR_MSG "%s in partition is invalid\n",
 							 line);
 				return -1;
 			}
 		} else {
 			// Ran out of lines unexpectedly
-			printf(GENERIC_ERROR_MSG "partition is missing structure data");
+			printf(GENERIC_ERROR_MSG "partition is missing structure data\n");
 			return -1;
 		}
 	}
 
 	// Validates that the data section is valid
-	fgets(line, MAX_CMD_LENGTH, file);
-	characters_read = strnlen(line, MAX_CMD_LENGTH);
+	fgets(line, MAX_CMD_LENGTH * MAX_CMD_LENGTH + 1, file);
+	characters_read = strnlen(line, MAX_CMD_LENGTH * MAX_CMD_LENGTH + 1);
 
 	fseek(file, 0, SEEK_SET);
 	lines_read = 0;
@@ -219,7 +232,7 @@ int mount(char *name) {
 
 	if (characters_read != (total_blocks * block_size)) {
 		fclose(file);
-		printf(GENERIC_ERROR_MSG "partition is missing data blocks");
+		printf(GENERIC_ERROR_MSG "partition is missing data blocks\n");
 		return -1;
 	}
 
@@ -296,7 +309,13 @@ int mount(char *name) {
  */
 int open_file(char *name) {
 	int i, j, empty;
-	
+
+	// Checks that the partition is mounted
+	if (!partition.partition_name) {
+		printf(GENERIC_ERROR_MSG "partition is not open\n");
+		return -1;
+	}
+
 	// Checks that the input is not null
 	if (!name) {
 		return -1;
@@ -309,13 +328,14 @@ int open_file(char *name) {
 			continue;
 		}
 
+		// Check that the filename matches what is being asked
 		if (strcmp(name, fat[i].filename) == 0) {
 			// Checks if the file is already open
 			for (j = 0; j < SIZE_OF_FP; j++) {
 				if (fat_fp_map[j].fat == i) {
 					skip_to_data(fp[j]);
 					fat[i].current_location = 0;
-					fseek(fp[empty],
+					fseek(fp[j],
 								fat[i].block_ptrs[fat[i].current_location] * partition.block_size,
 								SEEK_CUR);
 					return i;
@@ -365,7 +385,7 @@ int open_file(char *name) {
  * ----------------------------------------------------------------------------
  */
 void skip_to_data(FILE *file) {
-	int i, lines_read, expected;
+	int lines_read, expected;
 	char line[MAX_CMD_LENGTH];
 
 	lines_read = 0;
@@ -402,13 +422,18 @@ int find_empty_fp() {
  * @brief Reads a block from the file.
  * @param input  - file - The index in the FAT
  * @return  int - Status Code
- *                   0 - Read is successful
- *                  -1 - Read failed
+ *                   0 - Read failed
+ *                   1 - Read is successful
  * ----------------------------------------------------------------------------
  */
 int read_block(int file) {
 	FILE *f;
-	int i;
+	int i, track_fp, empty_fp;
+
+	// Check that a partition is open
+	if (!partition.partition_name) {
+		return 0;
+	}
 
 	// New file, nothing to read
 	if (fat[file].current_location == -1) {
@@ -425,18 +450,33 @@ int read_block(int file) {
 	for (i = 0; i < SIZE_OF_FP; i++) {
 		if (fat_fp_map[i].fat == file) {
 			f = fp[i];
+			track_fp = i;
+			break;
 		}
 	}
 
 	// The file does not exist
 	if (f == NULL) {
-		return 0;
+		empty_fp = find_empty_fp();
+		// No more fp available
+		if (empty_fp == -1) {
+			printf(GENERIC_ERROR_MSG "all filepointers are used.\n");
+			return 0;
+		} else {
+			fp[empty_fp] = fopen(partition.partition_name, "r+");
+			fat_fp_map[empty_fp].fat = file;
+			f = fp[empty_fp];
+			track_fp = empty_fp;
+		}
 	}
 
 	if (block_buffer) {
 		free(block_buffer);
 	}
 	block_buffer = malloc(partition.block_size);
+	for (i = 0; i < partition.block_size; i++) {
+		block_buffer[i] = '\0';
+	}
 	
 	// Load the block into block_buffer
 	skip_to_data(f);
@@ -446,6 +486,10 @@ int read_block(int file) {
 	for (i = 0; i < partition.block_size; i++) {
 		block_buffer[i] = fgetc(f);
 	}
+
+	fat_fp_map[track_fp].fat = -1;
+	fclose(fp[track_fp]);
+	fp[track_fp] = NULL;
 
 	fat[file].current_location++;
 	return 1;
@@ -469,15 +513,26 @@ char *return_block() {
  * ----------------------------------------------------------------------------
  */
 int write_block(int file, char *data) {
-	int i, empty_block, empty_fp;
+	int i, empty_block, empty_fp, track_fp;
 	FILE *f;
-	char line[MAX_CMD_LENGTH];
 
+	// Check that a partition is open
+	if (!partition.partition_name) {
+		return 0;
+	}
+
+	// If it's a new file, reset the pointer
 	if (fat[file].current_location == -1) {
 		fat[file].current_location = 0;
 	}
 
-	// Find an empty block
+	// Checks that the length of the input is not 0
+	if (strnlen(data, partition.block_size) == 0) {
+		return 0;
+	}
+
+	// Clean all unused blocks. Then, find an empty block
+	clean_block(file);
 	empty_block = find_empty_block(file);
 	if (empty_block == -1) {
 		// Could not find an empty block to write
@@ -489,6 +544,8 @@ int write_block(int file, char *data) {
 	for (i = 0; i < SIZE_OF_FP; i++) {
 		if (fat_fp_map[i].fat == file) {
 			f = fp[i];
+			track_fp = i;
+			break;
 		}
 	}
 
@@ -497,6 +554,7 @@ int write_block(int file, char *data) {
 		empty_fp = find_empty_fp();
 		// No more fp available
 		if (empty_fp == -1) {
+			printf(GENERIC_ERROR_MSG "all filepointers are used.\n");
 			return 0;
 		} else {
 			fp[empty_fp] = fopen(partition.partition_name, "r+");
@@ -504,6 +562,7 @@ int write_block(int file, char *data) {
 			fseek(fp[empty_fp], empty_block * partition.block_size, SEEK_CUR);
 			fat_fp_map[empty_fp].fat = file;
 			f = fp[empty_fp];
+			track_fp = empty_fp;
 		}
 	} else {
 		skip_to_data(f);
@@ -512,7 +571,7 @@ int write_block(int file, char *data) {
 
 	// Destructively overwrite block
 	for (i = 0; i < partition.block_size; i++) {
-		if (i < strnlen(data, partition.block_size)) {
+		if (i < (int) strnlen(data, partition.block_size)) {
 			fprintf(f, "%c", data[i]);
 		} else {
 			fprintf(f, "%c", '0');
@@ -521,13 +580,16 @@ int write_block(int file, char *data) {
 
 	// Flush to OS
 	fflush(f);
-
 	fat[file].block_ptrs[fat[file].current_location] = empty_block;
 	fat[file].current_location++;
 	compute_length(file);
 
 	// Update the information in the FAT
 	update_block_information(file);
+	fflush(f);
+	fat_fp_map[track_fp].fat = -1;
+	fclose(fp[track_fp]);
+	fp[track_fp] = NULL;
 
 	return 1;
 }
@@ -548,7 +610,6 @@ void update_block_information(int fat_file) {
 	}
 
 	skip_to_data(file);
-	// Copy data to buffer
 	fgets(buffer, partition.total_blocks * partition.block_size + 1, file);
 
 	// Truncate all content of the file. Rewrite
@@ -569,7 +630,7 @@ void update_block_information(int fat_file) {
 		fprintf(file, "%010d\n", -1);
 	}
 
-	for (i = 0; i < sizeof(buffer); i++) {
+	for (i = 0; i < (partition.total_blocks * partition.block_size + 1); i++) {
 		fprintf(file, "%c", buffer[i]);
 	}
 
@@ -584,7 +645,7 @@ void update_block_information(int fat_file) {
 void compute_length(int file) {
 	int i, j, size;
 	FILE *f;
-	char c, line[MAX_CMD_LENGTH];
+	char c;
 
 	fat[file].file_length = 0;
 
@@ -618,6 +679,19 @@ void compute_length(int file) {
 		fseek(f, -2, SEEK_CUR);
 	}
 	fat[file].file_length -= size;
+}
+
+/* ----------------------------------------------------------------------------
+ * @brief Sets the blocks after current location to be usable.
+ * ----------------------------------------------------------------------------
+ */
+void clean_block(int file) {
+	int i;
+	for (i = 0; i < SIZE_OF_BLOCK_PTRS; i++) {
+		if (i >= fat[file].current_location) {
+			fat[file].block_ptrs[i] = -1;
+		}
+	}
 }
 
 /* ----------------------------------------------------------------------------
@@ -695,8 +769,9 @@ void debug_disk_driver() {
 	}
 	printf("\n");
 	for (i = 0; i < SIZE_OF_FP; i++) {
-		printf("FAT_FP_MAP %d FAT: %d\n",
+		printf("FAT_FP_MAP %d FAT: %d FILE: %p\n",
 										i,
-										fat_fp_map[i].fat);
+										fat_fp_map[i].fat,
+										fp[i]);
 	}
 }

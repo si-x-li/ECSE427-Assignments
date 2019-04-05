@@ -9,3 +9,7 @@
 mysh
 mykernel
 mykernel2
+
+# Ignore 
+PARTITION/
+BackingStore/

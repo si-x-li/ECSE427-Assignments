@@ -1,0 +1,11 @@
+mount bonus 20 5
+write test.txt [This is the 1st long entry into the partition]
+write test2.txt [short]
+write test.txt [make short]
+write test3.txt [This is a non-contiguous entry hopefully it works well in the file system]
+read test.txt t1
+read test2.txt t2
+read test3.txt t3
+print t1
+print t2
+print t3

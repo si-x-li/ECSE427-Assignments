@@ -1,0 +1,19 @@
+mount test 20 15
+write test.txt [I am testing overwrite this 1 in test2.txt]
+write test2.txt [I am testing overwrite this 2 in test2.txt]
+write test3.txt [I am testing overwrite this 3 in test2.txt]
+write test4.txt [I am testing this 4 in test2.txt]
+write test5.txt [I am testing this 5 in test2.txt]
+write test6.txt [I am testing this 6 in test2.txt]
+read test.txt a
+read test2.txt b
+read test3.txt c
+read test4.txt d
+read test5.txt e
+read test6.txt f
+print a
+print b
+print c
+print d
+print e
+print f

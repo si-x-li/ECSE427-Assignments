@@ -1,5 +1,13 @@
 mount test 20 15
-write test.txt [I am testing this]
-write test2.txt [I am testing something else]
+write test.txt [I am testing this in 1 test.txt]
+write test2.txt [I am testing this in 2 test.txt]
+write test3.txt [I am testing this in 3 test.txt]
+write 923.abc [This is something else in test.txt]
 read test.txt s
+print s
+read test2.txt s
+print s
+read test3.txt s
+print s
+read 923.abc s
 print s

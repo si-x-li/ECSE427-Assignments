@@ -2,7 +2,7 @@
  * @file IOSCHEDULER.C
  * @author Si Xun Li - 260674916
  * @version 1.0
- * @brief 
+ * @brief This file schedules IO operations.
  * ----------------------------------------------------------------------------
  */
 
@@ -36,7 +36,7 @@ void strip_irrelevant_values(char *input);
  * ----------------------------------------------------------------------------
  */
 char *IO_scheduler(char *data, pcb_t *ptr, int cmd) {
-	int i, j, count, skip, free_position;
+	int i, count, skip, free_position, blocks_written;
 	char *buffer;
 
 	current = current % SIZE_OF_WAIT_QUEUE;
@@ -46,6 +46,7 @@ char *IO_scheduler(char *data, pcb_t *ptr, int cmd) {
 		return NULL;
 	}
 
+	// Add to the wait queue
 	wait_queue[free_position].data = malloc(MAX_CMD_LENGTH);
 	strcpy(wait_queue[free_position].data, data);
 	wait_queue[free_position].ptr = ptr;
@@ -58,11 +59,21 @@ char *IO_scheduler(char *data, pcb_t *ptr, int cmd) {
 			buffer[i] = '\0';
 		}
 
+		blocks_written = 0;
 		while(read_block((cmd & FAT_MASK) >> 1) == 1) {
-			strcat(buffer, return_block());
+			blocks_written++;
+			strncat(buffer, return_block(), get_block_size());
+			if (blocks_written >= 10) {
+				break;
+			}
 		}
-		current++;
 		strip_irrelevant_values(buffer);
+
+		free(wait_queue[current].data);
+		wait_queue[current].data = NULL;
+		wait_queue[current].ptr = NULL;
+		wait_queue[current].cmd = 0;
+		current++;
 		return buffer;
 	}
 	// Write to file
@@ -70,16 +81,28 @@ char *IO_scheduler(char *data, pcb_t *ptr, int cmd) {
 		count = 0;   // Reset counter to keep track of the characters
 		buffer = (char *) malloc(get_block_size() + 1);
 
+		for (i = 0; i < get_block_size() + 1; i++) {
+			buffer[i] = '\0';
+		}
+
 		// Copy characters into a buffer and send to be written to memory
 		for (i = 0; i < get_block_size(); i++) {
 			// Pad with NULL characters if there are no more entries
-			if (count > strlen(wait_queue[current].data)) {
+			if (count > (int) strlen(wait_queue[current].data)) {
 				buffer[i] = '\0';
 			}
 			buffer[i] = wait_queue[current].data[count++];
 		}
 
+		// Checks if the initial input contains null
 		skip = 0;
+		for (i = 0; i < get_block_size(); i++) {
+			if (buffer[i] == '\0') {
+				skip = 1;
+			}
+		}
+
+		blocks_written = 0;
 		while(write_block((cmd & FAT_MASK) >> 1, buffer) == 1) {
 			if (skip) {
 				break;
@@ -90,16 +113,20 @@ char *IO_scheduler(char *data, pcb_t *ptr, int cmd) {
 					skip = 1;
 				}
 			}
+			blocks_written++;
+			if (blocks_written >= 10) {
+				break;
+			}
 		}
 		free(buffer);
-		current++;
 	}
 
 	// Remove from wait queue
-	free(wait_queue[free_position].data);
-	wait_queue[free_position].data = NULL;
-	wait_queue[free_position].ptr = NULL;
-	wait_queue[free_position].cmd = 0;
+	free(wait_queue[current].data);
+	wait_queue[current].data = NULL;
+	wait_queue[current].ptr = NULL;
+	wait_queue[current].cmd = 0;
+	current++;
 
 	return NULL;
 }
@@ -115,10 +142,10 @@ int find_free_position() {
 	currently_checking = current;
 	
 	while (checked < SIZE_OF_WAIT_QUEUE) {
-		if (!wait_queue[checked].data) {
+		if (!wait_queue[currently_checking].data) {
 			return currently_checking;
 		}
-		currently_checking = (currently_checking + 1);
+		currently_checking = (currently_checking + 1) % SIZE_OF_WAIT_QUEUE;
 		checked++;
 	}
 

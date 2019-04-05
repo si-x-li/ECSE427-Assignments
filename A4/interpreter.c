@@ -69,7 +69,7 @@ int interpret(char **parsed_words,
               int num_of_words,
 							pcb_t *pcb,
               int is_cpu) {
-	int err, i, j;
+	int err, i;
 	// Catch if input is null
 	if (!parsed_words) {
 		err = -1;
@@ -457,8 +457,12 @@ int mount_cmd(char **parsed_words, int num_of_words) {
 	if (mount(parsed_words[1]) == 0) {
 		total_blocks = atoi(parsed_words[2]);
 		block_size = atoi(parsed_words[3]);
-		partition_drive(parsed_words[1], total_blocks, block_size);
-		mount(parsed_words[1]);
+		if (partition_drive(parsed_words[1], total_blocks, block_size) == 1) {
+			mount(parsed_words[1]);
+			printf("%s has been mounted\n", parsed_words[1]);
+		}
+	} else {
+		printf("%s has been mounted\n", parsed_words[1]);
 	}
 
 	return 0;
@@ -514,7 +518,7 @@ int write_cmd(char **parsed_words, int num_of_words, pcb_t *pcb, int is_cpu) {
 		} else {
 			j = 0;
 		}
-		for (j = j; j < strlen(parsed_words[i]); j++) {
+		for (j = j; j < (int) strlen(parsed_words[i]); j++) {
 			if (parsed_words[i][j] == '\0') {
 				break;
 			}
@@ -522,7 +526,11 @@ int write_cmd(char **parsed_words, int num_of_words, pcb_t *pcb, int is_cpu) {
 		}
 		data[count++] = ' ';
 	}
-	data[count -	2] = '\0';
+	data[count - 2] = '\0';
+	if (strnlen(data, MAX_CMD_LENGTH) == 0) {
+		printf(GENERIC_ERROR_MSG "input cannot be of size 0\n");
+		return -10;
+	}
 
 	// Open the file specified in parsed_words[1] from the partition
 	fat = open_file(parsed_words[1]);
@@ -602,7 +610,7 @@ int read_cmd(char **parsed_words, int num_of_words, pcb_t *pcb, int is_cpu) {
  */
 int is_number(char *word) {
 	int i;
-	for (i = 0; i < strlen(word); i++) {
+	for (i = 0; i < (int) strlen(word); i++) {
 		if (!isdigit(word[i]) && word[i] != '-') {
 			return 0;
 		}

@@ -1,0 +1,15 @@
+write test2.txt [Short in 4]
+write test3.txt [Short in 4]
+write test4.txt [Short in 4]
+write test5.txt [Short in 4]
+write overflow.txt [I am something overflowing and testing that everything is not contiguous as mentioned below and testing]
+read test2.txt b
+read test3.txt c
+read test4.txt d
+read test5.txt e
+print b
+print c
+print d
+print e
+read overflow.txt o
+print o
