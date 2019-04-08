@@ -105,7 +105,7 @@ int interpret(char **parsed_words,
 		 */
 		print_help();
 		err = 0;
-		return 0;
+		return err;
 	} else if (strcmp(parsed_words[0], "print") == 0) {
 		/* ------------------------------------------------------------
 		 * Handles print command
@@ -192,12 +192,23 @@ void print_debug (char **parsed_words, int num_of_words) {
 void print_help () {
 	printf("%s shell - Version %s\n"
 	       "Currently supported commands:\n"
-	       TAB "help                     - Displays available commands\n"
-	       TAB "quit                     - Exits this shell\n"
-	       TAB "set <varname> <value>    - Sets a variable to a value\n"
-	       TAB "print <varname>          - Prints the value of a set variable\n"
-	       TAB "run <script_name>        - Execute a script\n"
-	       TAB "exec <s1> [<s2>] [<s3>]  - Execute scripts in parallel\n",
+	       TAB "help                     - Displays available commands.\n"
+	       TAB "quit                     - Exits this shell.\n"
+	       TAB "set <varname> <value>    - Sets a variable to a value.\n"
+	       TAB "print <varname>          - Prints the value of a set variable.\n"
+	       TAB "run <script_name>        - Execute a script.\n"
+	       TAB "exec <s1> [<s2>] [<s3>]  - Execute scripts in parallel.\n"
+	       TAB "mount <partition_name> <number_of_blocks> <block_size> - Mounts\n"
+	       TAB "                           a partition. Unmounts previous\n"
+	       TAB "                           partition if applicable.\n"
+	       TAB "write <filename> <words> - Writes a block of words to a\n"
+	       TAB "                           file. Requires that a partition\n"
+	       TAB "                           is mounted. Can only be run in\n"
+	       TAB "                           exec scripts only.\n"
+	       TAB "read <filename> <variable_name> - Reads the content of a \n"
+	       TAB "                           file and stores it to a variable.\n"
+	       TAB "                           Can only be run in exec scripts\n"
+	       TAB "                           only.\n",
 	       SHELL_NAME,
 	       SHELL_VERSION);
 }
@@ -276,7 +287,7 @@ int run_file (char **parsed_words, int num_of_words) {
  */
 int set_var (char **parsed_words, int num_of_words) {
 	int i, err;
-  unsigned int j;
+	unsigned int j;
 	char key[MAX_CMD_LENGTH];
 	char value[MAX_CMD_LENGTH];
 	int count = 0;
@@ -383,8 +394,6 @@ void run_line_from_script(char *line, pcb_t *pcb, int is_cpu) {
 		free(words[i]);
 	}
 	free(words);
-
-
 	handle_error(err);
 
 	// Clear line
@@ -439,7 +448,7 @@ int mount_cmd(char **parsed_words, int num_of_words) {
 	int total_blocks, block_size;
 	if (num_of_words != 4) {
 		printf(GENERIC_EXPECTED_MSG "mount <partition_name> <number_of_blocks>"
-										" <block_size>");
+		                            " <block_size>");
 		return -9;
 	}
 
@@ -457,7 +466,9 @@ int mount_cmd(char **parsed_words, int num_of_words) {
 	if (mount(parsed_words[1]) == 0) {
 		total_blocks = atoi(parsed_words[2]);
 		block_size = atoi(parsed_words[3]);
-		if (partition_drive(parsed_words[1], total_blocks, block_size) == 1) {
+		if (partition_drive(parsed_words[1],
+		                    total_blocks,
+				    block_size) == 1) {
 			mount(parsed_words[1]);
 			printf("%s has been mounted\n", parsed_words[1]);
 		}
@@ -492,16 +503,16 @@ int write_cmd(char **parsed_words, int num_of_words, pcb_t *pcb, int is_cpu) {
 	// Check that the input is enclosed with square brackets
 	if (parsed_words[2][0] != '[' ||
 	    parsed_words[num_of_words - 1]
-			            [strlen(parsed_words[num_of_words - 1]) - 1] != ']') {
+	                [strlen(parsed_words[num_of_words - 1]) - 1] != ']') {
 		printf(GENERIC_EXPECTED_MSG
-					 "words should be enclosed with square brackets\n");
+		       "words should be enclosed with square brackets\n");
 		return -10;
 	}
 
 	// Only exec scripts are allowed to execute this command
 	if (is_cpu == 0) {
 		printf(GENERIC_ERROR_MSG
-					 "this command can only be exected in an exec script\n");
+		       "this command can only be exected in an exec script\n");
 		return -10;
 	}
 
@@ -572,7 +583,7 @@ int read_cmd(char **parsed_words, int num_of_words, pcb_t *pcb, int is_cpu) {
 	// Only exec scripts are allowed to execute this command
 	if (is_cpu == 0) {
 		printf(GENERIC_ERROR_MSG
-										"this command can only be executed in an exec script\n");
+		       "this command can only be executed in an exec script\n");
 		return -11;
 	}
 
@@ -582,7 +593,8 @@ int read_cmd(char **parsed_words, int num_of_words, pcb_t *pcb, int is_cpu) {
 		buffer = IO_scheduler("", pcb, fat);
 
 		if (strlen(buffer) == 0) {
-			printf(GENERIC_ERROR_MSG "%s does not exist\n", parsed_words[1]);
+			printf(GENERIC_ERROR_MSG "%s does not exist\n",
+			       parsed_words[1]);
 			return -10;
 		}
 
