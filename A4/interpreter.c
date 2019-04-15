@@ -30,7 +30,7 @@ int run_file(char **parsed_words, int num_of_words);
 int set_var(char **parsed_words, int num_of_words);
 int read_and_exec_file(char *file);
 int exec(char **parsed_words, int num_of_words, int is_cpu);
-int mount_cmd(char **parsed_words, int num_of_words);
+int mount_cmd(char **parsed_words, int num_of_words, int is_cpu);
 int write_cmd(char **parsed_words, int num_of_words, pcb_t *pcb, int is_cpu);
 int read_cmd(char **parsed_words, int num_of_words, pcb_t *pcb, int is_cpu);
 
@@ -139,7 +139,7 @@ int interpret(char **parsed_words,
 		 * Handles mount command
 		 * ------------------------------------------------------------
 		 */
-		err = mount_cmd(parsed_words, num_of_words);
+		err = mount_cmd(parsed_words, num_of_words, is_cpu);
 		return err;
 	} else if (strcmp(parsed_words[0], "write") == 0) {
 		/* ------------------------------------------------------------
@@ -440,12 +440,13 @@ int exec(char **parsed_words, int num_of_words, int is_cpu) {
  * @brief Mounts a partition.
  * @param input  - parsed_words  - An array of strings
  *        input  - num_of_words  - Number of elements in the array
+ *        input  - is_cpu        - Is the command coming from the CPU
  * @return int - Status code
  *                  0 - No errors
  *                 -9 - Unexpected number of arguments or format
  * ----------------------------------------------------------------------------
  */
-int mount_cmd(char **parsed_words, int num_of_words) {
+int mount_cmd(char **parsed_words, int num_of_words, int is_cpu) {
 	int total_blocks, block_size;
 	if (num_of_words != 4) {
 		printf(GENERIC_EXPECTED_MSG "mount <partition_name> "
@@ -462,6 +463,12 @@ int mount_cmd(char **parsed_words, int num_of_words) {
 	if (!is_number(parsed_words[3])) {
 		printf(GENERIC_EXPECTED_MSG "<block_size> "
 		       "should be an integer");
+		return -9;
+	}
+
+	if (is_cpu == 0) {
+		printf(GENERIC_ERROR_MSG
+		       "this command can only be executed from an exec script\n");
 		return -9;
 	}
 
