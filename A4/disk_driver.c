@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------------
- * @file DISK_driver.c
+ * @file disk_driver.c
  * @author Si Xun Li - 260674916
  * @version 1.0
  * @brief This file implements the disk driver. 
@@ -155,7 +155,8 @@ int partition_drive(char *name, int total_blocks, int block_size) {
  */
 int mount(char *name) {
 	FILE *file;
-	char line[MAX_CMD_LENGTH * MAX_CMD_LENGTH + 1], relative_path[MAX_CMD_LENGTH];
+	char line[MAX_CMD_LENGTH * MAX_CMD_LENGTH + 1],
+	     relative_path[MAX_CMD_LENGTH];
 	int expected, lines_read, characters_read, lines_per_fat,
 			total_blocks, block_size, count, i;
 	DIR *dir = opendir(PARTITION_FOLDER_NAME);
@@ -205,13 +206,15 @@ int mount(char *name) {
 					 ((lines_read - 3) % lines_per_fat) != 0 &&
 					 !is_number(line))) {
 				printf("%d", ((lines_read - 2) % lines_per_fat));
-				printf(GENERIC_ERROR_MSG "%s in partition is invalid\n",
-							 line);
+				printf(GENERIC_ERROR_MSG
+				       "%s in partition is invalid\n",
+				       line);
 				return -1;
 			}
 		} else {
 			// Ran out of lines unexpectedly
-			printf(GENERIC_ERROR_MSG "partition is missing structure data\n");
+			printf(GENERIC_ERROR_MSG
+			       "partition is missing structure data\n");
 			return -1;
 		}
 	}
@@ -336,8 +339,9 @@ int open_file(char *name) {
 					skip_to_data(fp[j]);
 					fat[i].current_location = 0;
 					fseek(fp[j],
-								fat[i].block_ptrs[fat[i].current_location] * partition.block_size,
-								SEEK_CUR);
+					      fat[i].block_ptrs[fat[i].current_location] *
+					      partition.block_size,
+					      SEEK_CUR);
 					return i;
 				}
 			}
@@ -355,8 +359,9 @@ int open_file(char *name) {
 			skip_to_data(fp[empty]);
 			fat[i].current_location = 0;
 			fseek(fp[empty],
-						fat[i].block_ptrs[fat[i].current_location] * partition.block_size,
-						SEEK_CUR);
+			      fat[i].block_ptrs[fat[i].current_location] *
+			      partition.block_size,
+			      SEEK_CUR);
 			return i;
 		}
 	}
@@ -460,7 +465,8 @@ int read_block(int file) {
 		empty_fp = find_empty_fp();
 		// No more fp available
 		if (empty_fp == -1) {
-			printf(GENERIC_ERROR_MSG "all filepointers are used.\n");
+			printf(GENERIC_ERROR_MSG
+			       "all filepointers are used.\n");
 			return 0;
 		} else {
 			fp[empty_fp] = fopen(partition.partition_name, "r+");
@@ -481,8 +487,9 @@ int read_block(int file) {
 	// Load the block into block_buffer
 	skip_to_data(f);
 	fseek(f,
-				fat[file].block_ptrs[fat[file].current_location] * partition.block_size,
-				SEEK_CUR);
+	      fat[file].block_ptrs[fat[file].current_location] *
+	      partition.block_size,
+	      SEEK_CUR);
 	for (i = 0; i < partition.block_size; i++) {
 		block_buffer[i] = fgetc(f);
 	}
@@ -554,12 +561,14 @@ int write_block(int file, char *data) {
 		empty_fp = find_empty_fp();
 		// No more fp available
 		if (empty_fp == -1) {
-			printf(GENERIC_ERROR_MSG "all filepointers are used.\n");
+			printf(GENERIC_ERROR_MSG
+			       "all filepointers are used.\n");
 			return 0;
 		} else {
 			fp[empty_fp] = fopen(partition.partition_name, "r+");
 			skip_to_data(fp[empty_fp]);
-			fseek(fp[empty_fp], empty_block * partition.block_size, SEEK_CUR);
+			fseek(fp[empty_fp], empty_block * partition.block_size,
+			      SEEK_CUR);
 			fat_fp_map[empty_fp].fat = file;
 			f = fp[empty_fp];
 			track_fp = empty_fp;
@@ -666,7 +675,8 @@ void compute_length(int file) {
 
 	// Remove 0s from file length
 	skip_to_data(f);
-	fseek(f, (fat[file].block_ptrs[i - 1] + 1) * partition.block_size, SEEK_CUR);
+	fseek(f, (fat[file].block_ptrs[i - 1] + 1) * partition.block_size,
+	      SEEK_CUR);
 	size = 0;
 	fseek(f, -1, SEEK_CUR);
 	for (i = partition.block_size - 1; i >= 0; i--) {
@@ -745,13 +755,12 @@ void debug_disk_driver() {
 	int i, j;
 
 	printf("PARTITION NAME: %s  TOTAL BLOCKS: %d  BLOCK_SIZE: %d\n",
-									partition.partition_name,
-									partition.total_blocks,
-									partition.block_size);
+	       partition.partition_name,
+	       partition.total_blocks,
+	       partition.block_size);
 	for (i = 0; i < SIZE_OF_FAT; i++) {
 		printf("FILENAME: %s  FILE LENGTH: %d\n",
-										fat[i].filename,
-										fat[i].file_length);
+		       fat[i].filename, fat[i].file_length);
 		for (j = 0; j < SIZE_OF_BLOCK_PTRS; j++) {
 			printf("BLOCK PTRS %d: %d  ", j, fat[i].block_ptrs[j]);
 		}
@@ -770,8 +779,6 @@ void debug_disk_driver() {
 	printf("\n");
 	for (i = 0; i < SIZE_OF_FP; i++) {
 		printf("FAT_FP_MAP %d FAT: %d FILE: %p\n",
-										i,
-										fat_fp_map[i].fat,
-										fp[i]);
+		       i, fat_fp_map[i].fat, fp[i]);
 	}
 }

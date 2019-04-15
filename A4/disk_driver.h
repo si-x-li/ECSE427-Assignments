@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------------
- * @file DISK_driver.h
+ * @file disk_driver.h
  * @author Si Xun Li - 260674916
  * @version 1.0
  * @brief This file is the disk driver's header file. 

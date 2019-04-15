@@ -1,7 +1,7 @@
 /* ----------------------------------------------------------------------------
  * @file INTERPRETER.H
  * @author Si Xun Li - 260674916
- * @version 2.0
+ * @version 4.0
  * @brief This file is the header file for the interpreter.
  * ----------------------------------------------------------------------------
  */

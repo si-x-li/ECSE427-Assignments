@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------------
- * @file IOSCHEDULER.C
+ * @file io_scheduler.c
  * @author Si Xun Li - 260674916
  * @version 1.0
  * @brief This file schedules IO operations.

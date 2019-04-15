@@ -1,7 +1,7 @@
 /* ----------------------------------------------------------------------------
  * @file INTERPRETER.C
  * @author Si Xun Li - 260674916
- * @version 2.0
+ * @version 4.0
  * @brief This file contains the interpreter and all helper functions. The 
  *        majority of functions return status codes. Any negative numbers
  *        indicate an error.
@@ -413,7 +413,8 @@ int exec(char **parsed_words, int num_of_words, int is_cpu) {
 	FILE *file;
 	int i = 0;
 	if (num_of_words > 4 || num_of_words < 2) {
-		printf(GENERIC_EXPECTED_MSG "exec <script1> [<script2>] [<script3>]\n"); 
+		printf(GENERIC_EXPECTED_MSG "exec <script1> [<script2>] "
+		       "[<script3>]\n"); 
 		return -7;
 	}
 
@@ -447,18 +448,20 @@ int exec(char **parsed_words, int num_of_words, int is_cpu) {
 int mount_cmd(char **parsed_words, int num_of_words) {
 	int total_blocks, block_size;
 	if (num_of_words != 4) {
-		printf(GENERIC_EXPECTED_MSG "mount <partition_name> <number_of_blocks>"
-		                            " <block_size>");
+		printf(GENERIC_EXPECTED_MSG "mount <partition_name> "
+		       "<number_of_blocks> <block_size>");
 		return -9;
 	}
 
 	if (!is_number(parsed_words[2])) {
-		printf(GENERIC_EXPECTED_MSG "<number_of_blocks> should be an integer");
+		printf(GENERIC_EXPECTED_MSG "<number_of_blocks> "
+		       "should be an integer");
 		return -9;
 	}
 
 	if (!is_number(parsed_words[3])) {
-		printf(GENERIC_EXPECTED_MSG "<block_size> should be an integer");
+		printf(GENERIC_EXPECTED_MSG "<block_size> "
+		       "should be an integer");
 		return -9;
 	}
 
